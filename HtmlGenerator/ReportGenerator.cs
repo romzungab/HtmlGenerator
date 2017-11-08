@@ -13,38 +13,57 @@ namespace HtmlGenerator
     {
         public static void Main(string[] args)
         {
-            var possibleDimensions = new[]
+            var classificationType = new Dimension
             {
-                new Dimension
-                {
-                    Name = "Classification.Type",
-                    Values = new[] { "Task", "Topic", "Project" },
-                },
-                new Dimension
-                {
-                    Name = "Activity.Application",
-                    Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
-                }
+                Name = "Classification.Type",
+                Values = new[] { "Task", "Topic", "Project" },
             };
 
-            var grouping = new[]
+            var activityApplication = new Dimension
+            {
+                Name = "Activity.Application",
+                Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
+            };
+
+            var columnGrouping = new[]
             {
                 new Grouping
                 {
-                    Dimension = possibleDimensions[0],
+                    Dimension = classificationType,
                     Group = false,
                 },
 
                 new Grouping
                 {
-                    Dimension = possibleDimensions[1],
+                    Dimension = activityApplication,
                     Group = false,
                 },
+                new Grouping
+                {
+                    Dimension = activityApplication,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = activityApplication,
+                    Group = false,
+                },
+
+            };
+
+            var rowGrouping = new[]
+            {
+                new Grouping
+                {
+                    Dimension = classificationType,
+                    Group = true,
+                }
             };
 
             var report = new Report
             {
-                Columns = grouping
+                Columns = columnGrouping,
+                Rows = rowGrouping
             };
 
             var html = TableBuilder.BuildHtml(report);

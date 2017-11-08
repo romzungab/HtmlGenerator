@@ -9,5 +9,6 @@ namespace HtmlGenerator
     public class Report
     {
         public Grouping[] Columns { get; set; }
+        public Grouping[] Rows { get; set; }
     }
 }
