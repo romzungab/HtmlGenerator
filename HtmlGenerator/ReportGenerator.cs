@@ -25,30 +25,30 @@ namespace HtmlGenerator
                 Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
             };
 
+            var classificationKind = new Dimension
+            {
+                Name = "Classification.Kind",
+                Values = new[] {"Business","Personal","Break"},
+            };
+
+            var classificationDay = new Dimension
+            {
+                Name = "Classification.Day",
+                Values = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
+            };
+
             var columnGrouping = new[]
             {
                 new Grouping
                 {
-                    Dimension = classificationType,
-                    Group = false,
-                },
-
-                new Grouping
-                {
                     Dimension = activityApplication,
                     Group = false,
                 },
-                new Grouping
+               new Grouping
                 {
-                    Dimension = activityApplication,
+                    Dimension = classificationKind,
                     Group = false,
                 },
-                new Grouping
-                {
-                    Dimension = activityApplication,
-                    Group = false,
-                },
-
             };
 
             var rowGrouping = new[]
@@ -57,7 +57,17 @@ namespace HtmlGenerator
                 {
                     Dimension = classificationType,
                     Group = true,
-                }
+                },
+                new Grouping
+                {
+                    Dimension = classificationDay,
+                    Group = true,
+                },
+                new Grouping
+                {
+                Dimension = classificationType,
+                Group = true,
+                },
             };
 
             var report = new Report

@@ -33,22 +33,13 @@ th {
 
             var rgroup = report.Rows.Where(r => r.Group);
             var rgroups = rgroup.Select(g => g.Dimension.Values).ToList();
-            var finalGrouping = rgroups.Concat(ungroups).ToList();
-            
+
             var grouped = false;
             table.Append("<tr>\n");
-            foreach (var row in report.Rows)
-            {
-                
-                    table.Append("<th>\n");
-                    table.Append(row.Dimension.Name);
-                    table.Append("\n</th>\n");
-                    colCount++;
-                
-            }
+
             foreach (var col in report.Columns)
             {
-               if (col.Group)
+                if (col.Group)
                 {
                     grouped = true;
                     foreach (var dval in col.Dimension.Values)
@@ -75,60 +66,129 @@ th {
                 colCount++;
             }
             table.Append("</tr>\n");
-            
-            if (ungroups.Any())
+
+            if (rgroups.Count > 0)
             {
-                foreach (var line in Combinations(finalGrouping))
+                foreach (var ts in Combinations(rgroups))
                 {
-                    var numCols = colCount;
-                    var ct = 0;
-                    table.Append("<tr>\n");
-                    foreach (var c in line)
+                    foreach (var t in ts)
                     {
-                        table.Append("<td>\n");
-                        table.Append(c);
-                        table.Append("\n</td>\n");
-                        ct++;
+                        table.Append("<tr>\n");
+                        table.Append("<th align='left' colspan=" + colCount + ">\n");
+                        table.Append(t);
+                        table.Append("\n</th>\n");
+                        table.Append("</tr>\n");
                     }
-                    
-                    for (var colIndex = 0; colIndex < numCols; colIndex++)
+                    if (ungroups.Any())
                     {
-                        table.Append("<td>\n");
-                        table.Append("1");
-                        table.Append("\n</td>\n");
-                        ct++;
-                        if (ct == numCols)
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                for (var rowIndex = 0; rowIndex < ungroups[0].Length; rowIndex++)
-                {
-                    var numCols = colCount;
-                    table.Append("<tr>\n");
-                    foreach (var col in report.Columns)
-                    {
-                        if (!col.Group)
+                        foreach (var line in Combinations(ungroups))
                         {
-                            table.Append("<td>\n");
-                            table.Append(col.Dimension.Values.Length > rowIndex ? col.Dimension.Values[rowIndex] : "");
-                            table.Append("\n</td>\n");
-                        }
-                        else
-                        {
+                            var numCols = colCount;
+                            var ct = 0;
+                            table.Append("<tr>\n");
+                            foreach (var c in line)
+                            {
+                                table.Append("<td>\n");
+                                table.Append(c);
+                                table.Append("\n</td>\n");
+                                ct++;
+                            }
+
                             for (var colIndex = 0; colIndex < numCols; colIndex++)
                             {
                                 table.Append("<td>\n");
                                 table.Append("1");
                                 table.Append("\n</td>\n");
+                                ct++;
+                                if (ct == numCols)
+                                    break;
+                            }
+                            table.Append("</tr>\n");
+                        }
+                    }
+                    else
+                    {
+                        for (var rowIndex = 0; rowIndex < ungroups[0].Length; rowIndex++)
+                        {
+                            var numCols = colCount;
+                            table.Append("<tr>\n");
+                            foreach (var col in report.Columns)
+                            {
+                                if (!col.Group)
+                                {
+                                    table.Append("<td>\n");
+                                    table.Append(col.Dimension.Values.Length > rowIndex ? col.Dimension.Values[rowIndex] : "");
+                                    table.Append("\n</td>\n");
+                                }
+                                else
+                                {
+                                    for (var colIndex = 0; colIndex < numCols; colIndex++)
+                                    {
+                                        table.Append("<td>\n");
+                                        table.Append("1");
+                                        table.Append("\n</td>\n");
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+            else
+            {
+                if (ungroups.Any())
+                {
+                    foreach (var line in Combinations(ungroups))
+                    {
+                        var numCols = colCount;
+                        var ct = 0;
+                        table.Append("<tr>\n");
+                        foreach (var c in line)
+                        {
+                            table.Append("<td>\n");
+                            table.Append(c);
+                            table.Append("\n</td>\n");
+                            ct++;
+                        }
 
+                        for (var colIndex = 0; colIndex < numCols; colIndex++)
+                        {
+                            table.Append("<td>\n");
+                            table.Append("1");
+                            table.Append("\n</td>\n");
+                            ct++;
+                            if (ct == numCols)
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    for (var rowIndex = 0; rowIndex < ungroups[0].Length; rowIndex++)
+                    {
+                        var numCols = colCount;
+                        table.Append("<tr>\n");
+                        foreach (var col in report.Columns)
+                        {
+                            if (!col.Group)
+                            {
+                                table.Append("<td>\n");
+                                table.Append(col.Dimension.Values.Length > rowIndex ? col.Dimension.Values[rowIndex] : "");
+                                table.Append("\n</td>\n");
+                            }
+                            else
+                            {
+                                for (var colIndex = 0; colIndex < numCols; colIndex++)
+                                {
+                                    table.Append("<td>\n");
+                                    table.Append("1");
+                                    table.Append("\n</td>\n");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             table.Append("</tr>\n");
 
             table.Append("</table>");
