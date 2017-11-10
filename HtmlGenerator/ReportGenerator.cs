@@ -28,59 +28,114 @@ namespace HtmlGenerator
             var classificationKind = new Dimension
             {
                 Name = "Classification.Kind",
-                Values = new[] {"Business","Personal","Break"},
+                Values = new[] { "Business", "Leave", "Unclassified", "Break" },
             };
 
-            var classificationDay = new Dimension
+            var day = new Dimension
             {
-                Name = "Classification.Day",
+                Name = "Day",
                 Values = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
             };
 
-            var columnGrouping = new[]
+            var resource = new Dimension
             {
+                Name = "Resource",
+                Values = new[] { "Roms", "Vic", "Hope" },
+            };
+
+            var department = new Dimension
+            {
+                Name = "Department",
+                Values = new[] { "Special Project", "Development", "Support" }
+            };
+
+            var classificationFolder = new Dimension
+            {
+                Name="Classification.Folder",
+                Values = new[] {"Unclassified", "Public", "Business","AdHoc"},
+            };
+            var weeklyTimesheetGrouping = new[]
+            {
+                new Grouping()
+                {
+                    Dimension = day,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = classificationKind,
+                    Group = true,
+                },
+            };
+
+            var weeklyTimesheetRowGrouping = new[]
+            {
+                new Grouping
+                {
+                    Dimension = department,
+                    Group = true,
+                },
+                new Grouping
+                {
+                    Dimension = resource,
+                    Group = true,
+                },
+            };
+
+            var weeklyTimesheet = new Report
+            {
+                Columns = weeklyTimesheetGrouping,
+                Rows = weeklyTimesheetRowGrouping
+            };
+
+            var classificationAllocationColumnGrouping = new[]
+            {
+                new Grouping
+                {
+                    Dimension = classificationFolder,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = classificationType,
+                    Group = false,
+                },
                 new Grouping
                 {
                     Dimension = classificationKind,
                     Group = false,
                 },
-                new Grouping
-                {
-                    Dimension = activityApplication,
-                    Group = true,
-                },
-            
+               
             };
 
-            var rowGrouping = new[]
+            var classificationAllocationRowGrouping = new[]
             {
                 new Grouping
                 {
-                    Dimension = classificationType,
-                    Group = true,
+                  Dimension = department,
+                  Group = true  
                 },
                 new Grouping
                 {
-                    Dimension = classificationDay,
-                    Group = true,
-                },
-                new Grouping
-                {
-                Dimension = classificationType,
-                Group = true,
+                    Dimension = resource,
+                    Group = true
                 },
             };
-
-            var report = new Report
+            var classificationAllocation = new Report
             {
-                Columns = columnGrouping,
-                Rows = rowGrouping
+                    Columns = classificationAllocationColumnGrouping,
+                    Rows = classificationAllocationRowGrouping
             };
 
-            var html = TableBuilder.BuildHtml(report);
-            var fileName = @"C:\Users\romelyn.ungab\Documents\report.html";
-            File.WriteAllText(fileName, html);
-            Process.Start(fileName);
+            var weeklyTimesheethtml = TableBuilder.BuildHtml(weeklyTimesheet);
+            var weeklyTimesheetFileName = @"C:\Users\romelyn.ungab\Documents\weeklyTimesheetReport.html";
+            File.WriteAllText(weeklyTimesheetFileName, weeklyTimesheethtml);
+            Process.Start(weeklyTimesheetFileName);
+
+            var classificationAllocationthtml = TableBuilder.BuildHtml(classificationAllocation);
+            var classificationAllocationFileName = @"C:\Users\romelyn.ungab\Documents\classificationAllocationReport.html";
+            File.WriteAllText(classificationAllocationFileName, classificationAllocationthtml);
+            Process.Start(classificationAllocationFileName);
         }
     }
 }
