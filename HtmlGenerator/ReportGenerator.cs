@@ -41,14 +41,15 @@ namespace HtmlGenerator
             {
                 new Grouping
                 {
-                    Dimension = activityApplication,
-                    Group = false,
-                },
-               new Grouping
-                {
                     Dimension = classificationKind,
                     Group = false,
                 },
+                new Grouping
+                {
+                    Dimension = activityApplication,
+                    Group = true,
+                },
+            
             };
 
             var rowGrouping = new[]
