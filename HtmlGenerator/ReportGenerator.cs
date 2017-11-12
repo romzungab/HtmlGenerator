@@ -51,9 +51,10 @@ namespace HtmlGenerator
 
             var classificationFolder = new Dimension
             {
-                Name="Classification.Folder",
-                Values = new[] {"Unclassified", "Public", "Business","AdHoc"},
+                Name = "Classification.Folder",
+                Values = new[] { "Unclassified", "Public", "Business", "AdHoc" },
             };
+
             var weeklyTimesheetGrouping = new[]
             {
                 new Grouping()
@@ -105,7 +106,7 @@ namespace HtmlGenerator
                     Dimension = classificationKind,
                     Group = false,
                 },
-               
+
             };
 
             var classificationAllocationRowGrouping = new[]
@@ -113,7 +114,7 @@ namespace HtmlGenerator
                 new Grouping
                 {
                   Dimension = department,
-                  Group = true  
+                  Group = true
                 },
                 new Grouping
                 {
@@ -121,21 +122,104 @@ namespace HtmlGenerator
                     Group = true
                 },
             };
+
             var classificationAllocation = new Report
             {
-                    Columns = classificationAllocationColumnGrouping,
-                    Rows = classificationAllocationRowGrouping
+                Columns = classificationAllocationColumnGrouping,
+                Rows = classificationAllocationRowGrouping
+            };
+
+            var topicAllocationColumnGrouping = new[]
+            {
+                new Grouping
+                {
+                  Dimension = classificationFolder,
+                  Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = classificationKind,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = resource,
+                    Group = false,
+                },
+            };
+            var topicAllocationRowGrouping = new[]
+            {
+                new Grouping
+                {
+                    Dimension = classificationFolder,
+                    Group = false,
+                },
+            };
+            var topicAllocation = new Report
+            {
+                Columns = topicAllocationColumnGrouping,
+                Rows = topicAllocationRowGrouping
+            };
+
+            var activityListColumnGrouping = new[]
+            {
+                new Grouping
+                {
+                    Dimension = resource,
+                    Group = false,
+                },
+
+               new Grouping
+                {
+                    Dimension =   classificationFolder,
+                    Group = false,
+                }
+            };
+
+            var activityListRowGrouping = new[]
+            {
+                new Grouping
+                {
+                  Dimension = classificationFolder,
+                  Group = true,
+                },
+                new Grouping
+                {
+                    Dimension = activityApplication,
+                    Group = true,
+                },
+                new Grouping
+                {
+                    Dimension = resource,
+                    Group = true,
+                }
+            };
+
+            var activityList = new Report
+            {
+                Columns = activityListColumnGrouping,
+                Rows = activityListRowGrouping,
             };
 
             var weeklyTimesheethtml = TableBuilder.BuildHtml(weeklyTimesheet);
-            var weeklyTimesheetFileName = @"C:\Users\romelyn.ungab\Documents\weeklyTimesheetReport.html";
+            const string weeklyTimesheetFileName = @"C:\Users\romelyn.ungab\Documents\weeklyTimesheetReport.html";
             File.WriteAllText(weeklyTimesheetFileName, weeklyTimesheethtml);
             Process.Start(weeklyTimesheetFileName);
 
             var classificationAllocationthtml = TableBuilder.BuildHtml(classificationAllocation);
-            var classificationAllocationFileName = @"C:\Users\romelyn.ungab\Documents\classificationAllocationReport.html";
+            const string classificationAllocationFileName = @"C:\Users\romelyn.ungab\Documents\classificationAllocationReport.html";
             File.WriteAllText(classificationAllocationFileName, classificationAllocationthtml);
             Process.Start(classificationAllocationFileName);
+
+            var topicAllocationHtml = TableBuilder.BuildHtml(topicAllocation);
+            const string topicAllocationFileName = @"C:\Users\romelyn.ungab\Documents\topicAllocationReport.html";
+            File.WriteAllText(topicAllocationFileName, topicAllocationHtml);
+            Process.Start(topicAllocationFileName);
+
+            var activityListHtml = TableBuilder.BuildHtml(activityList);
+            const string activityListFileName = @"C:\Users\romelyn.ungab\Documents\topicAllocationReport.html";
+            File.WriteAllText(activityListFileName, activityListHtml);
+            Process.Start(activityListFileName);
         }
     }
 }

@@ -33,15 +33,14 @@ th {
             var ungroups = ungroup.Select(g => g.Dimension.Values).ToList();
 
             var group = report.Columns.Where(c => c.Group);
-            
+
             var rgroup = report.Rows.Where(r => r.Group);
             var rgroups = rgroup.Select(g => g.Dimension.Values).ToList();
-            bool grouped=false;
+            var grouped = false;
 
             table.Append("<tr>\n");
             if (group.Count() < report.Columns.Length)
             {
-
                 foreach (var col in report.Columns)
                 {
                     if (col.Group)
@@ -62,7 +61,6 @@ th {
                         table.Append("\n</th>\n");
                         colCount++;
                     }
-                  
                 }
                 if (!grouped)
                 {
@@ -74,21 +72,25 @@ th {
 
                 table.Append("</tr>\n");
 
-            if (rgroups.Count > 0)
-            {
-                table.Append(GetRowGroupingCombi(report, rgroups, colCount, ungroups));
+                if (rgroups.Count > 0)
+                {
+                    table.Append(GetRowGroupingCombi(report, rgroups, colCount, ungroups));
+                }
+                else
+                {
+                    GenerateColumns(report, colCount, ungroups, table);
+                }
             }
-        }else
-        {
-            table.Append("<th>\n");
-            table.Append("Measure");
-            table.Append("\n</th>\n");
-            table.Append("<tr>\n");
-            table.Append("<td>\n");
-            table.Append("1");
-            table.Append("\n</td>\n");
-            table.Append("</tr>\n");
-
+            else
+            {
+                table.Append("<th>\n");
+                table.Append("Measure");
+                table.Append("\n</th>\n");
+                table.Append("<tr>\n");
+                table.Append("<td>\n");
+                table.Append("1");
+                table.Append("\n</td>\n");
+                table.Append("</tr>\n");
             }
 
             table.Append("</tr>\n");
@@ -96,7 +98,6 @@ th {
             table.Append("</table>");
             return table.ToString();
         }
-
 
         private static string GetRowGroupingCombi(Report report, List<string[]> rgroups, int colCount, List<string[]> ungroups)
         {
@@ -136,23 +137,28 @@ th {
                     table.Append("\n</th>\n");
                     table.Append("</tr>\n");
 
-                    if (ungroups.Any())
-                    {
-                        foreach (var line in Combinations(ungroups))
-                        {
-                            GenerateDataWithMoreThanOneColumnUnGrouped(colCount, table, line);
-                        }
-                    }
-                    else
-                    {
-                        for (var rowIndex = 0; rowIndex < ungroups[0].Length; rowIndex++)
-                        {
-                            GenerateDataWithOneColumnUngroup(report, colCount, table, rowIndex);
-                        }
-                    }
+                    GenerateColumns(report, colCount, ungroups, table);
                 }
             }
             return table.ToString();
+        }
+
+        private static void GenerateColumns(Report report, int colCount, List<string[]> ungroups, StringBuilder table)
+        {
+            if (ungroups.Any())
+            {
+                foreach (var line in Combinations(ungroups))
+                {
+                    GenerateDataWithMoreThanOneColumnUnGrouped(colCount, table, line);
+                }
+            }
+            else
+            {
+                for (var rowIndex = 0; rowIndex < ungroups[0].Length; rowIndex++)
+                {
+                    GenerateDataWithOneColumnUngroup(report, colCount, table, rowIndex);
+                }
+            }
         }
 
         private static void GenerateDataWithOneColumnUngroup(Report report, int colCount, StringBuilder table, int rowIndex)
@@ -203,8 +209,7 @@ th {
             }
             table.Append("</tr>\n");
         }
-
-
+        
         private static IEnumerable<T[]> Combinations<T>(IReadOnlyList<IReadOnlyList<T>> lists)
         {
             var result = new int[lists.Count];
