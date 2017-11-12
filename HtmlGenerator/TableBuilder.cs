@@ -33,7 +33,7 @@ th {
             var ungroups = ungroup.Select(g => g.Dimension.Values).ToList();
 
             var group = report.Columns.Where(c => c.Group);
-
+            
             var rgroup = report.Rows.Where(r => r.Group);
             var rgroups = rgroup.Select(g => g.Dimension.Values).ToList();
             var grouped = false;
@@ -73,13 +73,10 @@ th {
                 table.Append("</tr>\n");
 
                 if (rgroups.Count > 0)
-                {
                     table.Append(GetRowGroupingCombi(report, rgroups, colCount, ungroups));
-                }
                 else
-                {
                     GenerateColumns(report, colCount, ungroups, table);
-                }
+                
             }
             else
             {
