@@ -101,18 +101,12 @@ namespace HtmlGenerator
 
             var timesheetColumnGrouping = new[]
             {
-                new Grouping()
+              
+               new Grouping()
                 {
                     Dimension = date,
                     Group = false,
                 },
-                new Grouping
-                {
-
-                    Dimension = resource,
-                    Group = false
-                },
-
                 new Grouping
                 {
                     Dimension = classificationKind,
@@ -132,17 +126,13 @@ namespace HtmlGenerator
                     Dimension = resource,
                     Group = true,
                 },
-                new Grouping
-                {
-                  Dimension = month,
-                  Group = true,
-                },
+               
             };
 
             var timesheet = new Report
             {
                 Columns = timesheetColumnGrouping,
-
+                Rows = timesheetRowGrouping,
             };
 
             var classificationAllocationColumnGrouping = new[]
@@ -262,7 +252,7 @@ namespace HtmlGenerator
         private static void CreateFile(Report report, string reportName)
         {
             var html = TableBuilder.BuildHtml(report);
-            var reportFilename = @"C:\Users\romelyn.ungab\Documents\" + reportName + ".html";
+            var reportFilename = @"C:\Users\romelyn.ungab\Documents\reports\" + reportName + ".html";
             File.WriteAllText(reportFilename, html);
             Process.Start(reportFilename);
         }
