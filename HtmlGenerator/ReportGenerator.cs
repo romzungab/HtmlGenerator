@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
+using System.Resources;
 
 namespace HtmlGenerator
 {
@@ -9,55 +12,73 @@ namespace HtmlGenerator
         {
             var classificationType = new Dimension
             {
-                Name = "Classification.Type",
+                Table = "Classification",
+                PrimaryKey = "ClassificationId",
+                ColName = "Type",
                 Values = new[] { "Task", "Topic", "Project" },
             };
 
             var activityApplication = new Dimension
             {
-                Name = "Activity.Application",
+                Table = "tblActivityApplication",
+                PrimaryKey =  "ActivityApplicationId",
+                ColName = "Application",
                 Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
             };
 
             var classificationKind = new Dimension
             {
-                Name = "Classification.Kind",
+                Table = "Classification",
+                PrimaryKey = "ClassificationId",
+                ColName = "Kind",
                 Values = new[] { "Business", "Leave", "Unclassified", "Break" },
             };
 
             var day = new Dimension
             {
-                Name = "Day",
+                Table = "Date",
+                PrimaryKey = "DateId",
+                ColName = "Day",
                 Values = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
             };
 
             var resource = new Dimension
             {
-                Name = "Resource",
+                Table ="tblResource",
+                PrimaryKey = "ResourceId",
+                ColName = "CONCAT (tblResource.FirstName, tblResource.LastName) as Fullname",
                 Values = new[] { "Roms", "Vic", "Hope" },
             };
 
             var department = new Dimension
             {
-                Name = "Department",
+                Table = "Department",
+                PrimaryKey = "DepartmentId",
+                ColName = "Name",
                 Values = new[] { "Special Project", "Development", "Support" }
             };
 
             var classificationFolder = new Dimension
             {
-                Name = "Classification.Folder",
+                Table = "Classification",
+                PrimaryKey = "ClassificationId",
+                ColName = "Folder",
                 Values = new[] { "Unclassified", "Public", "Business", "AdHoc" },
             };
 
             var date = new Dimension
             {
-                Name = "Date",
+                Table = "Date",
+                PrimaryKey = "DateId",
+                ColName = "Date",
                 Values = new[] { "1 Nov 2017", "02 Nov 2017", "03 Nov 2017" },
             };
 
             var month = new Dimension
             {
-                Name = "Month",
+                Table = "Date",
+                PrimaryKey = "DateId",
+                ColName = "Month",
                 Values = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" },
             };
             var weeklyTimesheetGrouping = new[]
@@ -79,17 +100,17 @@ namespace HtmlGenerator
                 new Grouping
                 {
                     Dimension = department,
-                    Group = true,
+                    Group = false,
                 },
                 new Grouping
                 {
                     Dimension = resource,
-                    Group = true,
+                    Group = false,
                 },
                 new Grouping()
                 {
                     Dimension = date,
-                    Group = true,
+                    Group = false,
                 },
             };
 
@@ -151,12 +172,7 @@ namespace HtmlGenerator
 
             var classificationAllocationRowGrouping = new[]
             {
-                new Grouping
-                {
-                  Dimension = department,
-                  Group = true
-                },
-                new Grouping
+               new Grouping
                 {
                     Dimension = resource,
                     Group = true
@@ -242,11 +258,33 @@ namespace HtmlGenerator
                 Rows = activityListRowGrouping,
             };
 
-            CreateFile(weeklyTimesheet, "weeklyTimesheet");
-            CreateFile(timesheet, "timesheet");
-            CreateFile(classificationAllocation, "classificationAllocation");
-            CreateFile(topicAllocation, "topicAllocation");
-            CreateFile(activityList, "activityList");
+            var sampleReportColumnGrouping = new []
+            {
+                new Grouping
+                {
+                    Dimension = resource,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = activityApplication,
+                    Group = false,
+                }
+            };
+
+            var sampleReport = new Report
+            {
+                BaseTable = "tblActivityStatic",
+                Columns = sampleReportColumnGrouping,
+            };
+
+            Console.Out.WriteLine(SQLGenerator.BuildSQL(sampleReport));
+
+           // CreateFile(weeklyTimesheet, "weeklyTimesheet");
+            //CreateFile(timesheet, "timesheet");
+           // CreateFile(classificationAllocation, "classificationAllocation");
+            //CreateFile(topicAllocation, "topicAllocation");
+            //CreateFile(activityList, "activityList");
         }
 
         private static void CreateFile(Report report, string reportName)

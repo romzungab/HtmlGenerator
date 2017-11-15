@@ -53,7 +53,7 @@ th {
                     else
                     {
                         table.Append("<th>\n");
-                        table.Append(col.Dimension.Name);
+                        table.Append(col.Dimension.ColName);
                         table.Append("\n</th>\n");
                         colCount++;
                     }

@@ -1,8 +1,12 @@
-﻿namespace HtmlGenerator
+﻿using System;
+
+namespace HtmlGenerator
 {
     public class Dimension
     {
-        public string Name { get; set; }
+        public string Table { get; set; }
+        public string PrimaryKey { get; set; }
+        public string ColName { get; set; }
         public string[] Values { get; set; }
     }
 

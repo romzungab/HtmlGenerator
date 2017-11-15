@@ -2,6 +2,7 @@
 {
     public class Report
     {
+        public string BaseTable { get; set; }
         public Grouping[] Columns { get; set; }
         public Grouping[] Rows { get; set; }
 

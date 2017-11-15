@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dimension.cs" />
+    <Compile Include="SQLGenerator.cs" />
     <Compile Include="Report.cs" />
     <Compile Include="ReportGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
