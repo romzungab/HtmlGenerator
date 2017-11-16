@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace HtmlGenerator
 {
@@ -12,13 +9,10 @@ namespace HtmlGenerator
     {
         public static string BuildSQL(Report report)
         {
-
-            var factTable = BuildFactTableActivity(report);
-            factTable = GroupFactTable(factTable, report);
-            return JoinFactTableWithDimensions(factTable, report);
-
-           // return BuildFactTableActivity(report);
-
+            //with the assumption that there is already a fact table
+            
+            var sql = SelectFromFactTable(report);
+            return JoinFactTableWithDimensions(sql, report) + "\norder by 1, 2";
         }
 
         public static string BuildFactTableActivity(Report report)
@@ -29,13 +23,13 @@ namespace HtmlGenerator
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + allDim[i].Table+ "."+allDim[i].PrimaryKey +" as " + allDim[i].PrimaryKey +"\n";
+                    sql = sql + allDim[i].Table + "." + allDim[i].PrimaryKey + " as " + allDim[i].PrimaryKey + "\n";
                 else
                     sql = sql + allDim[i].Table + "." + allDim[i].PrimaryKey + " as " + allDim[i].PrimaryKey + ",\n\t";
             }
-            sql = sql + "from "+report.BaseTable+"\n";
+            sql = sql + "from " + report.BaseTable + "\n";
 
-            return allDim.Aggregate(sql, (current, r) => current + " inner join " + r.Table + " on " + r.Table + "." + r.PrimaryKey + " = "+report.BaseTable+"." + r.PrimaryKey + "\n");
+            return allDim.Aggregate(sql, (current, r) => current + " inner join " + r.Table + " on " + r.Table + "." + r.PrimaryKey + " = " + report.BaseTable + "." + r.PrimaryKey + "\n");
         }
 
         private static List<Dimension> AllDimensions(Report report)
@@ -75,25 +69,38 @@ namespace HtmlGenerator
                 if (i == allDim.Count - 1)
                     sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
                 else
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + ",";
+                    sql = sql + "factTable." + allDim[i].PrimaryKey + ", ";
             }
             
             return sql;
         }
 
-        public static string JoinFactTableWithDimensions(string factSql, Report report)
+        public static string SelectFromFactTable(Report report)
         {
-            var sql = "select \n\t";
             var allDim = AllDimensions(report);
+            var sql = allDim.Aggregate("select\n\t", (current, d) => current + "factTable." + d.PrimaryKey + ",\n\t");
+            sql = sql + "count(1) Measure\n";
+            sql = sql + "from factTable\n";
+            sql = sql + "group by ";
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + allDim[i].ColName;
-                else sql = sql + allDim[i].ColName + ", ";
+                    sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
+                else
+                    sql = sql + "factTable." + allDim[i].PrimaryKey + ", ";
             }
-            sql = sql + "\nfrom (" + factSql + ") as groupFactTable\n";
 
-            return allDim.Aggregate(sql, (current, dim) => current + "\ninner join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "groupFactTable." + dim.PrimaryKey);
+            return sql;
+        }
+
+        public static string JoinFactTableWithDimensions(string factSql, Report report)
+        {
+            var allDim = AllDimensions(report);
+            var sql = allDim.Aggregate("select \n\t", (current, d) => current + d.ColName + ", ");
+            sql = sql + "Measure";
+            sql = sql + "\nfrom (\n" + factSql + ") as groupedFactable\n";
+
+            return allDim.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "groupedFactable." + dim.PrimaryKey);
         }
 
     }
