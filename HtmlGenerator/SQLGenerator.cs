@@ -31,25 +31,37 @@ namespace HtmlGenerator
 
             return allDim.Aggregate(sql, (current, r) => current + " inner join " + r.Table + " on " + r.Table + "." + r.PrimaryKey + " = " + report.BaseTable + "." + r.PrimaryKey + "\n");
         }
-
+       
         private static List<Dimension> AllDimensions(Report report)
         {
            var allDim = new List<Dimension>();
             foreach (var c in report.Columns)
             {
-                if (allDim.Contains(c.Dimension))
+                if (allDim.Where(d=>d.Table == c.Dimension.Table).Contains(c.Dimension))
                     continue;
                 allDim.Add(c.Dimension);
             }
             
             foreach (var r in report.Rows)
             {
-                if (allDim.Contains(r.Dimension))
+                if (allDim.Where(d => d.Table == r.Dimension.Table).Contains(r.Dimension))
                     continue;
                 allDim.Add(r.Dimension);
             }
-            return allDim;
+           return allDim;
         }
+
+        private static List<Dimension> GetAllUniqueDimensions(List<Dimension> allDim)
+        {
+            var uniqueDim = new List<Dimension>();
+            foreach (var dim in allDim)
+            {
+                if (!(uniqueDim.Any(d => d.Table == dim.Table)))
+                    uniqueDim.Add(dim);
+            }
+            return uniqueDim;
+        }
+
 
         public static string GroupFactTable(string factSql, Report report)
         {
@@ -77,7 +89,7 @@ namespace HtmlGenerator
 
         public static string SelectFromFactTable(Report report)
         {
-            var allDim = AllDimensions(report);
+            var allDim = GetAllUniqueDimensions(AllDimensions(report));
             var sql = allDim.Aggregate("select\n\t", (current, d) => current + "factTable." + d.PrimaryKey + ",\n\t");
             sql = sql + "count(1) Measure\n";
             sql = sql + "from factTable\n";
@@ -95,7 +107,7 @@ namespace HtmlGenerator
 
         public static string JoinFactTableWithDimensions(string factSql, Report report)
         {
-            var allDim = AllDimensions(report);
+            var allDim = GetAllUniqueDimensions(AllDimensions(report));
             var sql = allDim.Aggregate("select \n\t", (current, d) => current + d.ColName + ", ");
             sql = sql + "Measure";
             sql = sql + "\nfrom (\n" + factSql + ") as groupedFactable\n";

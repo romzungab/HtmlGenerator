@@ -13,25 +13,24 @@ namespace HtmlGenerator
             var classificationType = new Dimension
             {
                 Table = "dClassification",
-                PrimaryKey = "ClassificationId",
+                PrimaryKey = "ObjectId",
                 ColName = "Type",
                 Values = new[] { "Task", "Topic", "Project" },
             };
 
-            var activityApplication = new Dimension
-            {
-                Table = "dActivityApplication",
-                PrimaryKey =  "ActivityApplicationId",
-                ColName = "Application",
-                Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
-            };
-
-            var classificationKind = new Dimension
+           var classificationKind = new Dimension
             {
                 Table = "dClassification",
-                PrimaryKey = "ClassificationId",
+                PrimaryKey = "ObjectId",
                 ColName = "Kind",
                 Values = new[] { "Business", "Leave", "Unclassified", "Break" },
+            };
+            var classificationFolder = new Dimension
+            {
+                Table = "dClassification",
+                PrimaryKey = "ObjectId",
+                ColName = "Folder",
+                Values = new[] { "Unclassified", "Public", "Business", "AdHoc" },
             };
 
             var day = new Dimension
@@ -42,28 +41,28 @@ namespace HtmlGenerator
                 Values = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
             };
 
+            var activityApplication = new Dimension
+            {
+                Table = "dActivity",
+                PrimaryKey = "GlobalId",
+                ColName = "Application",
+                Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
+            };
+
             var resource = new Dimension
             {
                 Table ="dResource",
                 PrimaryKey = "ResourceId",
-                ColName = "CONCAT (tblResource.FirstName, tblResource.LastName) as Fullname",
+                ColName = "Fullname",
                 Values = new[] { "Roms", "Vic", "Hope" },
             };
 
             var department = new Dimension
             {
-                Table = "dDepartment",
-                PrimaryKey = "DepartmentId",
-                ColName = "Name",
+                Table = "dResource",
+                PrimaryKey = "ResourceId",
+                ColName = "Department",
                 Values = new[] { "Special Project", "Development", "Support" }
-            };
-
-            var classificationFolder = new Dimension
-            {
-                Table = "dClassification",
-                PrimaryKey = "ClassificationId",
-                ColName = "Folder",
-                Values = new[] { "Unclassified", "Public", "Business", "AdHoc" },
             };
 
             var date = new Dimension
@@ -267,7 +266,12 @@ namespace HtmlGenerator
                 },
                 new Grouping
                 {
-                    Dimension = activityApplication,
+                    Dimension = classificationFolder,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = classificationKind,
                     Group = false,
                 }
             };
@@ -279,17 +283,17 @@ namespace HtmlGenerator
             };
 
             CreateSQLFile(sampleReport, "SampleReport");
-            CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
-            CreateSQLFile(timesheet, "timesheet");
-            CreateSQLFile(classificationAllocation, "classificationAllocation");
-            CreateSQLFile(topicAllocation, "topicAllocation");
-            CreateSQLFile(activityList, "activityList");
+            //CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
+            //CreateSQLFile(timesheet, "timesheet");
+            //CreateSQLFile(classificationAllocation, "classificationAllocation");
+            //CreateSQLFile(topicAllocation, "topicAllocation");
+            //CreateSQLFile(activityList, "activityList");
 
-            CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
-            CreateReportFile(timesheet, "timesheet");
-            CreateReportFile(classificationAllocation, "classificationAllocation");
-            CreateReportFile(topicAllocation, "topicAllocation");
-            CreateReportFile(activityList, "activityList");
+            //CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
+            //CreateReportFile(timesheet, "timesheet");
+            //CreateReportFile(classificationAllocation, "classificationAllocation");
+            //CreateReportFile(topicAllocation, "topicAllocation");
+            //CreateReportFile(activityList, "activityList");
         }
 
         private static void CreateReportFile(Report report, string reportName)
@@ -303,6 +307,7 @@ namespace HtmlGenerator
         private static void CreateSQLFile(Report report, string reportName)
         {
             var sql = SQLGenerator.BuildSQL(report);
+            Console.WriteLine(sql);
             var reportFilename = @"C:\Users\romelyn.ungab\Documents\sql\" + reportName + ".sql";
             File.WriteAllText(reportFilename, sql);
             //Process.Start(reportFilename);
