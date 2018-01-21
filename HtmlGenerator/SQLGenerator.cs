@@ -10,7 +10,7 @@ namespace HtmlGenerator
         public static string BuildSQL(Report report)
         {
             //with the assumption that there is already a fact table
-            
+
             var sql = SelectFromFactTable(report);
             return JoinFactTableWithDimensions(sql, report) + "\norder by 1, 2";
         }
@@ -31,27 +31,27 @@ namespace HtmlGenerator
 
             return allDim.Aggregate(sql, (current, r) => current + " inner join " + r.Table + " on " + r.Table + "." + r.PrimaryKey + " = " + report.BaseTable + "." + r.PrimaryKey + "\n");
         }
-       
+
         private static List<Dimension> AllDimensions(Report report)
         {
-           var allDim = new List<Dimension>();
+            var allDim = new List<Dimension>();
             foreach (var c in report.Columns)
             {
-                if (allDim.Where(d=>d.Table == c.Dimension.Table).Contains(c.Dimension))
+                if (allDim.Where(d => d.Table == c.Dimension.Table).Contains(c.Dimension))
                     continue;
                 allDim.Add(c.Dimension);
             }
-            
+
             foreach (var r in report.Rows)
             {
                 if (allDim.Where(d => d.Table == r.Dimension.Table).Contains(r.Dimension))
                     continue;
                 allDim.Add(r.Dimension);
             }
-           return allDim;
+            return allDim;
         }
 
-        private static List<Dimension> GetAllUniqueDimensions(List<Dimension> allDim)
+        private static List<Dimension> GetAllUniqueDimensions(IEnumerable<Dimension> allDim)
         {
             var uniqueDim = new List<Dimension>();
             foreach (var dim in allDim)
@@ -62,7 +62,6 @@ namespace HtmlGenerator
             return uniqueDim;
         }
 
-
         public static string GroupFactTable(string factSql, Report report)
         {
             var allDim = AllDimensions(report);
@@ -70,11 +69,11 @@ namespace HtmlGenerator
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + "factTable."+ allDim[i].PrimaryKey + "\n";
+                    sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
                 else
                     sql = sql + "factTable." + allDim[i].PrimaryKey + ",\n\t";
             }
-            sql = sql + "from(\n" + factSql + ") as factTable\n"; 
+            sql = sql + "from(\n" + factSql + ") as factTable\n";
             sql = sql + "group by ";
             for (var i = 0; i < allDim.Count; i++)
             {
@@ -83,7 +82,7 @@ namespace HtmlGenerator
                 else
                     sql = sql + "factTable." + allDim[i].PrimaryKey + ", ";
             }
-            
+
             return sql;
         }
 

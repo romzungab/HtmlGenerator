@@ -16,3 +16,4 @@ namespace HtmlGenerator
         public bool Group { get; set; }
     }
 }
+

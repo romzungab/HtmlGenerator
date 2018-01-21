@@ -1,8 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Resources;
 
 namespace HtmlGenerator
 {
@@ -219,7 +216,7 @@ namespace HtmlGenerator
             var activityListColumnGrouping = new[]
             {
 
-              new Grouping
+               new Grouping
                 {
                     Dimension =   classificationFolder,
                     Group = false,
@@ -282,12 +279,12 @@ namespace HtmlGenerator
                 Columns = sampleReportColumnGrouping,
             };
 
-            CreateSQLFile(sampleReport, "SampleReport");
-            //CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
+         //   CreateSQLFile(sampleReport, "SampleReport");
+            CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
-            //CreateSQLFile(classificationAllocation, "classificationAllocation");
+           // CreateSQLFile(classificationAllocation, "classificationAllocation");
             //CreateSQLFile(topicAllocation, "topicAllocation");
-            //CreateSQLFile(activityList, "activityList");
+           // CreateSQLFile(activityList, "activityList");
 
             //CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateReportFile(timesheet, "timesheet");
@@ -307,10 +304,9 @@ namespace HtmlGenerator
         private static void CreateSQLFile(Report report, string reportName)
         {
             var sql = SQLGenerator.BuildSQL(report);
-            Console.WriteLine(sql);
             var reportFilename = @"C:\Users\romelyn.ungab\Documents\sql\" + reportName + ".sql";
             File.WriteAllText(reportFilename, sql);
-            //Process.Start(reportFilename);
+            Process.Start(reportFilename);
         }
     }
 }
