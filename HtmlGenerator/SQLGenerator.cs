@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 
@@ -69,18 +68,18 @@ namespace HtmlGenerator
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
+                    sql = sql + report.BaseTable + allDim[i].PrimaryKey + "\n";
                 else
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + ",\n\t";
+                    sql = sql + report.BaseTable + allDim[i].PrimaryKey + ",\n\t";
             }
             sql = sql + "from(\n" + factSql + ") as factTable\n";
             sql = sql + "group by ";
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
+                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + "\n";
                 else
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + ", ";
+                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + ", ";
             }
 
             return sql;
@@ -89,16 +88,16 @@ namespace HtmlGenerator
         public static string SelectFromFactTable(Report report)
         {
             var allDim = GetAllUniqueDimensions(AllDimensions(report));
-            var sql = allDim.Aggregate("select\n\t", (current, d) => current + "factTable." + d.PrimaryKey + ",\n\t");
+            var sql = allDim.Aggregate("select\n\t", (current, d) => current + report.BaseTable+"." + d.PrimaryKey + ",\n\t");
             sql = sql + "count(1) Measure\n";
-            sql = sql + "from factTable\n";
+            sql = sql + "from "+ report.BaseTable +"\n";
             sql = sql + "group by ";
             for (var i = 0; i < allDim.Count; i++)
             {
                 if (i == allDim.Count - 1)
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + "\n";
+                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + "\n";
                 else
-                    sql = sql + "factTable." + allDim[i].PrimaryKey + ", ";
+                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + ", ";
             }
 
             return sql;

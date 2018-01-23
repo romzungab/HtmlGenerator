@@ -15,7 +15,7 @@ namespace HtmlGenerator
                 Values = new[] { "Task", "Topic", "Project" },
             };
 
-           var classificationKind = new Dimension
+            var classificationKind = new Dimension
             {
                 Table = "dClassification",
                 PrimaryKey = "ObjectId",
@@ -48,7 +48,7 @@ namespace HtmlGenerator
 
             var resource = new Dimension
             {
-                Table ="dResource",
+                Table = "dUser",
                 PrimaryKey = "ResourceId",
                 ColName = "Fullname",
                 Values = new[] { "Roms", "Vic", "Hope" },
@@ -79,7 +79,7 @@ namespace HtmlGenerator
             };
             var weeklyTimesheetGrouping = new[]
             {
-              new Grouping
+                new Grouping
                 {
                     Dimension = classificationKind,
                     Group = false,
@@ -118,8 +118,8 @@ namespace HtmlGenerator
 
             var timesheetColumnGrouping = new[]
             {
-              
-               new Grouping()
+
+                new Grouping()
                 {
                     Dimension = date,
                     Group = false,
@@ -143,7 +143,7 @@ namespace HtmlGenerator
                     Dimension = resource,
                     Group = true,
                 },
-               
+
             };
 
             var timesheet = new Report
@@ -164,11 +164,11 @@ namespace HtmlGenerator
                     Dimension = classificationType,
                     Group = false,
                 },
-             };
+            };
 
             var classificationAllocationRowGrouping = new[]
             {
-               new Grouping
+                new Grouping
                 {
                     Dimension = resource,
                     Group = true
@@ -185,8 +185,8 @@ namespace HtmlGenerator
             {
                 new Grouping
                 {
-                  Dimension = classificationFolder,
-                  Group = false,
+                    Dimension = classificationFolder,
+                    Group = false,
                 },
                 new Grouping
                 {
@@ -216,19 +216,19 @@ namespace HtmlGenerator
             var activityListColumnGrouping = new[]
             {
 
-               new Grouping
+                new Grouping
                 {
-                    Dimension =   classificationFolder,
+                    Dimension = classificationFolder,
                     Group = false,
-                },
-               new Grouping
-                {
-                Dimension = activityApplication,
-                Group = false,
                 },
                 new Grouping
                 {
-                    Dimension =   date,
+                    Dimension = activityApplication,
+                    Group = false,
+                },
+                new Grouping
+                {
+                    Dimension = date,
                     Group = false,
                 },
             };
@@ -237,8 +237,8 @@ namespace HtmlGenerator
             {
                 new Grouping
                 {
-                  Dimension = classificationFolder,
-                  Group = true,
+                    Dimension = classificationFolder,
+                    Group = true,
                 },
 
                 new Grouping
@@ -254,7 +254,7 @@ namespace HtmlGenerator
                 Rows = activityListRowGrouping,
             };
 
-            var sampleReportColumnGrouping = new []
+            var sampleReportColumnGrouping = new[]
             {
                 new Grouping
                 {
@@ -275,16 +275,16 @@ namespace HtmlGenerator
 
             var sampleReport = new Report
             {
-                BaseTable = "fTable",
+                BaseTable = "fActivity",
                 Columns = sampleReportColumnGrouping,
             };
 
-         //   CreateSQLFile(sampleReport, "SampleReport");
-            CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
+              CreateSQLFile(sampleReport, "SampleReport");
+           // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
-           // CreateSQLFile(classificationAllocation, "classificationAllocation");
+            // CreateSQLFile(classificationAllocation, "classificationAllocation");
             //CreateSQLFile(topicAllocation, "topicAllocation");
-           // CreateSQLFile(activityList, "activityList");
+            // CreateSQLFile(activityList, "activityList");
 
             //CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateReportFile(timesheet, "timesheet");
@@ -295,7 +295,7 @@ namespace HtmlGenerator
 
         private static void CreateReportFile(Report report, string reportName)
         {
-           var html = TableBuilder.BuildHtml(report);
+            var html = TableBuilder.BuildHtml(report);
             var reportFilename = @"C:\Users\romelyn.ungab\Documents\reports\" + reportName + ".html";
             File.WriteAllText(reportFilename, html);
             Process.Start(reportFilename);

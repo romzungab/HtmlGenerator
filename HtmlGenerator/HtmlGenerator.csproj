@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="FactTable.cs" />
     <Compile Include="Dimension.cs" />
     <Compile Include="SQLGenerator.cs" />
     <Compile Include="Report.cs" />
