@@ -110,6 +110,7 @@ namespace HtmlGenerator
 
             var fActivity = new FactTable
             {
+                Table = "fActivity",
                 Dimensions = new Dimension[]{dActivity, dUser, dClassification},
                 Columns = new[] {"GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName"}
             };
@@ -188,13 +189,13 @@ namespace HtmlGenerator
             //CreateReportFile(activityList, "activityList");
         }
 
-        private static void CreateReportFile(Report report, string reportName)
-        {
-            var html = TableBuilder.BuildHtml(report);
-            var reportFilename = @"C:\Users\romelyn.ungab\Documents\reports\" + reportName + ".html";
-            File.WriteAllText(reportFilename, html);
-            Process.Start(reportFilename);
-        }
+        //private static void CreateReportFile(Report report, string reportName)
+        //{
+        //    var html = TableBuilder.BuildHtml(report);
+        //    var reportFilename = @"C:\Users\romelyn.ungab\Documents\reports\" + reportName + ".html";
+        //    File.WriteAllText(reportFilename, html);
+        //    Process.Start(reportFilename);
+        //}
 
         private static void CreateSQLFile(Report report, string reportName)
         {
