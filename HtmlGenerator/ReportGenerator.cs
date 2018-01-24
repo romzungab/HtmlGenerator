@@ -279,14 +279,14 @@ namespace HtmlGenerator
                 Columns = sampleReportColumnGrouping,
             };
 
-              CreateSQLFile(sampleReport, "SampleReport");
+             // CreateSQLFile(sampleReport, "SampleReport");
            // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
             // CreateSQLFile(classificationAllocation, "classificationAllocation");
             //CreateSQLFile(topicAllocation, "topicAllocation");
             // CreateSQLFile(activityList, "activityList");
 
-            //CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
+            CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateReportFile(timesheet, "timesheet");
             //CreateReportFile(classificationAllocation, "classificationAllocation");
             //CreateReportFile(topicAllocation, "topicAllocation");
