@@ -6,13 +6,18 @@ namespace HtmlGenerator
     {
         public string Table { get; set; }
         public string PrimaryKey { get; set; }
-        public string ColName { get; set; }
-        public string[] Values { get; set; }
+    }
+
+    public class Column
+    {
+        public Dimension Dimension { get; set; }
+        public string Name { get; set; }
+        //public string[] Values { get; set; }
     }
 
     public class Grouping
     {
-        public Dimension Dimension { get; set; }
+        public Column Column { get; set; }
         public bool Group { get; set; }
     }
 }

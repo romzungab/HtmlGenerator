@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace HtmlGenerator
 {
-    public class FactTable
+    public class FactTable: Dimension
     {
         public Dimension[] Dimensions { get; set; }
-        
+
+        public string[] Columns { get; set; }
     }
 }

@@ -7,279 +7,174 @@ namespace HtmlGenerator
     {
         public static void Main(string[] args)
         {
-            var classificationType = new Dimension
+    
+            var dClassification = new Dimension
             {
                 Table = "dClassification",
                 PrimaryKey = "ObjectId",
-                ColName = "Type",
-                Values = new[] { "Task", "Topic", "Project" },
+              };
+
+            var cObjectId = new Column
+            {
+                Dimension = dClassification,
+                Name = "ObjectId",
+            };
+            var cCTitle = new Column
+            {
+                Dimension = dClassification,
+                Name = "Title",
+            };
+            var cReferenceNumber = new Column
+            {
+                Dimension = dClassification,
+                Name = "ReferenceNumber",
+            };
+            var cType = new Column
+            {
+                Dimension = dClassification,
+                Name = "Type",
+            };
+            var cIsPersonal = new Column
+            {
+                Dimension = dClassification,
+                Name = "IsPersonal",
+            };
+            var cIsPrivate = new Column
+            {
+                Dimension = dClassification,
+                Name = "IsPrivate",
+            };
+            var cIsArchived = new Column
+            {
+                Dimension = dClassification,
+                Name = "IsArchived",
+            };
+            var cFolder = new Column
+            {
+                Dimension = dClassification,
+                Name = "Folder",
             };
 
-            var classificationKind = new Dimension
-            {
-                Table = "dClassification",
-                PrimaryKey = "ObjectId",
-                ColName = "Kind",
-                Values = new[] { "Business", "Leave", "Unclassified", "Break" },
-            };
-            var classificationFolder = new Dimension
-            {
-                Table = "dClassification",
-                PrimaryKey = "ObjectId",
-                ColName = "Folder",
-                Values = new[] { "Unclassified", "Public", "Business", "AdHoc" },
-            };
-
-            var day = new Dimension
-            {
-                Table = "dDate",
-                PrimaryKey = "DateId",
-                ColName = "Day",
-                Values = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
-            };
-
-            var activityApplication = new Dimension
+            var dActivity = new Dimension
             {
                 Table = "dActivity",
                 PrimaryKey = "GlobalId",
-                ColName = "Application",
-                Values = new[] { "MS Word", "Visual Studio", "World of Warcraft", "Chrome" },
             };
 
-            var resource = new Dimension
+            var cGlobalId = new Column
+            {
+                Dimension = dActivity,
+                Name = "GlobalId",
+            };
+
+            var cActivityType = new Column
+            {
+                Dimension = dActivity,
+                Name = "ActivityType",
+            };
+
+            var cTitle = new Column
+            {
+                Dimension = dActivity,
+                Name = "ActivityType",
+            };
+
+            var cDescription = new Column
+            {
+                Dimension = dActivity,
+                Name = "Description",
+            };
+
+            var dUser = new Dimension
             {
                 Table = "dUser",
                 PrimaryKey = "ResourceId",
-                ColName = "Fullname",
-                Values = new[] { "Roms", "Vic", "Hope" },
             };
 
-            var department = new Dimension
+            var cResourceId = new Column
             {
-                Table = "dResource",
-                PrimaryKey = "ResourceId",
-                ColName = "Department",
-                Values = new[] { "Special Project", "Development", "Support" }
+                Dimension = dUser,
+                Name = "ResourceId"
             };
 
-            var date = new Dimension
+            var cFullName = new Column
             {
-                Table = "dDate",
-                PrimaryKey = "DateId",
-                ColName = "Date",
-                Values = new[] { "1 Nov 2017", "02 Nov 2017", "03 Nov 2017" },
+                Dimension = dUser,
+                Name = "FullName"
+            };
+            var cDepartment = new Column
+            {
+                Dimension = dUser,
+                Name = "Department"
             };
 
-            var month = new Dimension
+            var fActivity = new FactTable
             {
-                Table = "dDate",
-                PrimaryKey = "DateId",
-                ColName = "Month",
-                Values = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" },
-            };
-            var weeklyTimesheetGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = classificationKind,
-                    Group = false,
-                },
-                new Grouping()
-                {
-                    Dimension = day,
-                    Group = true,
-                },
+                Dimensions = new Dimension[]{dActivity, dUser, dClassification},
+                Columns = new[] {"GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName"}
             };
 
-            var weeklyTimesheetRowGrouping = new[]
+            var cfGlobalId = new Column
             {
-                new Grouping
-                {
-                    Dimension = department,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = false,
-                },
-                new Grouping()
-                {
-                    Dimension = date,
-                    Group = false,
-                },
+                Dimension =  fActivity,
+                Name = "GlobalId"
             };
 
-            var weeklyTimesheet = new Report
+            var cfObjectId = new Column
             {
-                Columns = weeklyTimesheetGrouping,
-                Rows = weeklyTimesheetRowGrouping
+                Dimension = fActivity,
+                Name = "ObjectId"
             };
-
-            var timesheetColumnGrouping = new[]
+            var cfUtcStart = new Column
             {
-
-                new Grouping()
+                Dimension = fActivity,
+                Name = "UTCStart"
+            };
+            var cfUtcFinish = new Column
+            {
+                Dimension = fActivity,
+                Name = "UTCFinish"
+            };
+            var cfHostName = new Column
+            {
+                Dimension = fActivity,
+                Name = "HostName"
+            };
+            var timesheetReport = new Report
+            {
+                BaseTable = fActivity,
+                Columns = new []
                 {
-                    Dimension = date,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = classificationKind,
-                    Group = true,
+                    new Grouping()
+                    {
+                        Column = cfUtcStart,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cfUtcFinish,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cFullName,
+                        Group = false
+                    },
+                    new Grouping
+                    {
+                        Column = cActivityType,
+                        Group = true
+                    },
+                    new Grouping
+                    {
+                        Column = cType,
+                        Group = true
+                    },
                 }
             };
 
-            var timesheetRowGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = department,
-                    Group = true,
-                },
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = true,
-                },
-
-            };
-
-            var timesheet = new Report
-            {
-                Columns = timesheetColumnGrouping,
-                Rows = timesheetRowGrouping,
-            };
-
-            var classificationAllocationColumnGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = classificationType,
-                    Group = false,
-                },
-            };
-
-            var classificationAllocationRowGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = true
-                },
-            };
-
-            var classificationAllocation = new Report
-            {
-                Columns = classificationAllocationColumnGrouping,
-                Rows = classificationAllocationRowGrouping
-            };
-
-            var topicAllocationColumnGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = classificationType,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = false,
-                },
-            };
-            var topicAllocationRowGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = false,
-                },
-            };
-            var topicAllocation = new Report
-            {
-                Columns = topicAllocationColumnGrouping,
-                Rows = topicAllocationRowGrouping
-            };
-
-            var activityListColumnGrouping = new[]
-            {
-
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = activityApplication,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = date,
-                    Group = false,
-                },
-            };
-
-            var activityListRowGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = true,
-                },
-
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = true,
-                }
-            };
-
-            var activityList = new Report
-            {
-                Columns = activityListColumnGrouping,
-                Rows = activityListRowGrouping,
-            };
-
-            var sampleReportColumnGrouping = new[]
-            {
-                new Grouping
-                {
-                    Dimension = resource,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = classificationFolder,
-                    Group = false,
-                },
-                new Grouping
-                {
-                    Dimension = classificationKind,
-                    Group = false,
-                }
-            };
-
-            var sampleReport = new Report
-            {
-                BaseTable = "fActivity",
-                Columns = sampleReportColumnGrouping,
-            };
-
-              CreateSQLFile(sampleReport, "SampleReport");
+          
+            CreateSQLFile(timesheetReport, "TimesheetReport");
            // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
             // CreateSQLFile(classificationAllocation, "classificationAllocation");
