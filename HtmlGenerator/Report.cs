@@ -2,9 +2,9 @@
 {
     public class Report
     {
-        public FactTable BaseTable { get; set; }
+        public FactTable FactTable { get; set; }
         public Grouping[] Rows { get; set; }
-        public Grouping[] Columns { get; set; }
+        public Grouping[] Data { get; set; }
 
         public Report()
         {

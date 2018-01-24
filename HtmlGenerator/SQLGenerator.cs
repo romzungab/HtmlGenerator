@@ -16,7 +16,7 @@ namespace HtmlGenerator
         private static List<Column> AllColumns(Report report)
         {
             var allColumns = new List<Column>();
-            foreach (var c in report.Columns)
+            foreach (var c in report.Data)
             {
                 if (allColumns.Contains(c.Column))
                     continue;
@@ -48,16 +48,16 @@ namespace HtmlGenerator
         public static string SelectFromFactTable(Report report)
         {
             var sql = "select\n\t";
-            sql = sql + report.BaseTable.Table +".*,\n\t";
+            sql = sql + report.FactTable.Table +".*,\n\t";
             sql = sql + "count(1) Measure\n";
-            sql = sql + "from "+ report.BaseTable.Table +"\n";
+            sql = sql + "from "+ report.FactTable.Table +"\n";
             sql = sql + "group by ";
-            for (var i = 0; i < report.BaseTable.Columns.Length; i++)
+            for (var i = 0; i < report.FactTable.Columns.Length; i++)
             {
-                if (i == report.BaseTable.Columns.Length - 1)
-                    sql = sql + report.BaseTable.Table + "." + report.BaseTable.Columns[i] + "\n";
+                if (i == report.FactTable.Columns.Length - 1)
+                    sql = sql + report.FactTable.Table + "." + report.FactTable.Columns[i] + "\n";
                 else
-                    sql = sql + report.BaseTable.Table + "." + report.BaseTable.Columns[i] + ", ";
+                    sql = sql + report.FactTable.Table + "." + report.FactTable.Columns[i] + ", ";
             }
 
             return sql;
@@ -69,7 +69,7 @@ namespace HtmlGenerator
             var selectColumns = SelectColumns(allCol);
             selectColumns = selectColumns + ",\n\tMeasure";
             var  sql = selectColumns + "\nfrom (\n" + fsql + ") as g";
-            return report.BaseTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "g." + dim.PrimaryKey);
+            return report.FactTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "g." + dim.PrimaryKey);
         }
 
     }

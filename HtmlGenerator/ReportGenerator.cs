@@ -7,12 +7,12 @@ namespace HtmlGenerator
     {
         public static void Main(string[] args)
         {
-    
+
             var dClassification = new Dimension
             {
                 Table = "dClassification",
                 PrimaryKey = "ObjectId",
-              };
+            };
 
             var cObjectId = new Column
             {
@@ -111,13 +111,13 @@ namespace HtmlGenerator
             var fActivity = new FactTable
             {
                 Table = "fActivity",
-                Dimensions = new Dimension[]{dActivity, dUser, dClassification},
-                Columns = new[] {"GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName"}
+                Dimensions = new Dimension[] { dActivity, dUser, dClassification },
+                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName" }
             };
 
             var cfGlobalId = new Column
             {
-                Dimension =  fActivity,
+                Dimension = fActivity,
                 Name = "GlobalId"
             };
 
@@ -143,8 +143,8 @@ namespace HtmlGenerator
             };
             var timesheetReport = new Report
             {
-                BaseTable = fActivity,
-                Columns = new []
+                FactTable = fActivity,
+                Data = new[]
                 {
                     new Grouping()
                     {
@@ -171,12 +171,24 @@ namespace HtmlGenerator
                         Column = cType,
                         Group = true
                     },
+                },
+                Rows = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cDepartment,
+                        Group = true
+                    },
+                    new Grouping()
+                    {
+                        Column = cfHostName,
+                        Group = true
+                    }
                 }
             };
 
-          
             CreateSQLFile(timesheetReport, "TimesheetReport");
-           // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
+            // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
             // CreateSQLFile(classificationAllocation, "classificationAllocation");
             //CreateSQLFile(topicAllocation, "topicAllocation");
