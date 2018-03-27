@@ -25,8 +25,8 @@ th {
 <table border>");
             var colCount = 0;
 
-            var ungroup = report.Columns.Where(c => c.Group == false);
-            var ungroups = ungroup.Select(g => g.Dimension.Values).ToList();
+            var ungroup = report.Data.Where(c => c.Group == false);
+            var ungroups = ungroup.Select(g => g.Column.Values).ToList();
 
             var group = report.Columns.Where(c => c.Group);
             

@@ -73,12 +73,6 @@ namespace HtmlGenerator
                 Name = "ActivityType",
             };
 
-            var cTitle = new Column
-            {
-                Dimension = dActivity,
-                Name = "ActivityType",
-            };
-
             var cDescription = new Column
             {
                 Dimension = dActivity,
@@ -112,7 +106,7 @@ namespace HtmlGenerator
             {
                 Table = "fActivity",
                 Dimensions = new Dimension[] { dActivity, dUser, dClassification },
-                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName" }
+                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName", "Minutes", "Duration", "Week","Day" }
             };
 
             var cfGlobalId = new Column
@@ -126,6 +120,7 @@ namespace HtmlGenerator
                 Dimension = fActivity,
                 Name = "ObjectId"
             };
+
             var cfUtcStart = new Column
             {
                 Dimension = fActivity,
@@ -140,6 +135,17 @@ namespace HtmlGenerator
             {
                 Dimension = fActivity,
                 Name = "HostName"
+            };
+            var cfMinutes = new Column
+            {
+                Dimension = fActivity,
+                Name = "Minutes"
+            };
+
+            var cfDuration = new Column
+            {
+                Dimension = fActivity,
+                Name = "Duration"
             };
             var timesheetReport = new Report
             {
@@ -187,14 +193,138 @@ namespace HtmlGenerator
                 }
             };
 
+            var activityListReport = new Report
+            {
+                FactTable = fActivity,
+                Data = new[] {
+                        new Grouping(){
+                            Column = cfUtcStart,
+                            Group = false
+                        },
+                        new Grouping(){
+                            Column = cFullName,
+                            Group = false
+                        },
+                        new Grouping(){
+                            Column = cType,
+                            Group = false,
+                        } ,
+                        new Grouping(){
+                            Column = cDescription,
+                            Group =false
+                        },
+                        new Grouping(){
+                            Column = cFolder,
+                            Group = false
+                        }
+                }
+            };
+
+            var adHocBillable = new Report
+            {
+                FactTable = fActivity,
+                Data = new[] {
+                     new Grouping(){
+                        Column = cfUtcStart,
+                        Group = false
+                    },
+                    new Grouping(){
+                        Column = cFolder,
+                        Group = false
+                    },
+                    new Grouping(){
+                        Column = cFullName,
+                        Group = false
+                    },
+                    new Grouping(){
+                        Column  = cCTitle,
+                        Group = false
+                    },
+                    new Grouping(){
+                        Column = cfMinutes,
+                        Group = false
+                    },
+
+                    new Grouping(){
+                        Column = cFolder,
+                        Group = false
+                    },
+                },
+                Rows = new[] {
+                     new Grouping(){
+                         Column = cFolder,
+                         Group = true
+                     }
+                 }
+            };
+
+            var topicAllocation = new Report()
+            {
+                FactTable = fActivity,
+                Data = new[] {
+                    new Grouping(){
+                        Column = cFolder,
+                        Group = false
+                    },
+                    new Grouping(){
+                         Column = cCTitle,
+                         Group = false
+                    },
+                    new Grouping(){
+                        Column = cType,
+                        Group = false
+                    },
+                    new Grouping(){
+                        Column = cFullName,
+                        Group = false
+                    },
+                    new Grouping() {
+                        Column = cfDuration,
+                        Group = false
+                    }
+                },
+            };
+
+            var classificationAllocation = new Report()
+            {
+                FactTable = fActivity,
+                Data = new[] {
+                    new Grouping(){
+                        Column = cFolder,
+                        Group = false
+                    },
+                      new Grouping(){
+                        Column = cCTitle,
+                        Group = false
+                    },
+                        new Grouping(){
+                        Column = cActivityType,
+                        Group = false
+                    },
+                         new Grouping(){
+                        Column = cFullName,
+                        Group = false
+                    },
+                         new Grouping(){
+                        Column = cfDuration,
+                        Group = false
+                    },
+
+                }
+            };
+
             CreateSQLFile(timesheetReport, "TimesheetReport");
+            CreateSQLFile(activityListReport, "ActivityListReport");
+            CreateSQLFile(topicAllocation, "TopicAllocationReport");
+            CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
+
             // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateSQLFile(timesheet, "timesheet");
             // CreateSQLFile(classificationAllocation, "classificationAllocation");
             //CreateSQLFile(topicAllocation, "topicAllocation");
-            // CreateSQLFile(activityList, "activityList");
 
-            //CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
+
+           // CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateReportFile(timesheet, "timesheet");
             //CreateReportFile(classificationAllocation, "classificationAllocation");
             //CreateReportFile(topicAllocation, "topicAllocation");

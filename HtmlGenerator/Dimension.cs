@@ -12,7 +12,7 @@ namespace HtmlGenerator
     {
         public Dimension Dimension { get; set; }
         public string Name { get; set; }
-        //public string[] Values { get; set; }
+       // public string[] Values { get; set; }
     }
 
     public class Grouping

@@ -13,7 +13,7 @@ namespace HtmlGenerator
             var sql = SelectFromFactTable(report);
             return JoinFactTableWithDimensions(sql, report) + "\norder by 1, 2";
         }
-        private static List<Column> AllColumns(Report report)
+        private static List<Column> GetAllColumns(Report report)
         {
             var allColumns = new List<Column>();
             foreach (var c in report.Data)
@@ -29,18 +29,18 @@ namespace HtmlGenerator
                     continue;
                 else allColumns.Add(e.Column);
             }
-
             return allColumns ;
         }
+
         public static string SelectColumns(List<Column> columns)
         {
             var sql = "select\n\t";
             for (var i = 0; i < columns.Count; i++)
             {
                 if (i == columns.Count - 1)
-                    sql = sql + columns[i].Name;
+                    sql = sql + columns[i].Dimension.Table+"."+columns[i].Name;
                 else
-                    sql = sql + columns[i].Name + ",\n\t";
+                    sql = sql + columns[i].Dimension.Table + "." + columns[i].Name + ",\n\t";
             }
             return sql;
         }
@@ -59,17 +59,16 @@ namespace HtmlGenerator
                 else
                     sql = sql + report.FactTable.Table + "." + report.FactTable.Columns[i] + ", ";
             }
-
             return sql;
         }
 
         public static string JoinFactTableWithDimensions(string fsql, Report report)
         {
-            var allCol = AllColumns(report);
+            var allCol = GetAllColumns(report);
             var selectColumns = SelectColumns(allCol);
             selectColumns = selectColumns + ",\n\tMeasure";
-            var  sql = selectColumns + "\nfrom (\n" + fsql + ") as g";
-            return report.FactTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "g." + dim.PrimaryKey);
+            var  sql = selectColumns + "\nfrom (\n" + fsql + ") as "+ report.FactTable.Table;
+            return report.FactTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + report.FactTable.Table + "." + dim.PrimaryKey);
         }
 
     }
