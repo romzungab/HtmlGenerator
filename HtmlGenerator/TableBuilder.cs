@@ -26,7 +26,7 @@ th {
             var colCount = 0;
 
             var ungroup = report.Data.Where(c => c.Group == false);
-            var ungroups = ungroup.Select(g => g.Column.Values).ToList();
+            var ungroups = ungroup.Select(g => g.Column).ToList();
 
             var group = report.Columns.Where(c => c.Group);
             
@@ -158,7 +158,7 @@ th {
         {
             var numCols = colCount;
             table.Append("<tr>\n");
-            foreach (var col in report.Columns)
+            foreach (var col in report.Data)
             {
                 if (!col.Group)
                 {

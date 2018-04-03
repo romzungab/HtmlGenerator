@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using HtmlGenerator;
 
 namespace HtmlGenerator
 {
@@ -7,13 +9,26 @@ namespace HtmlGenerator
     {
         public static void Main(string[] args)
         {
-
+            //dimensions
             var dClassification = new Dimension
             {
                 Table = "dClassification",
                 PrimaryKey = "ObjectId",
             };
 
+            var dActivity = new Dimension
+            {
+                Table = "dActivity",
+                PrimaryKey = "GlobalId",
+            };
+
+            var dUser = new Dimension
+            {
+                Table = "dUser",
+                PrimaryKey = "ResourceId",
+            };
+
+            //columns
             var cObjectId = new Column
             {
                 Dimension = dClassification,
@@ -22,6 +37,12 @@ namespace HtmlGenerator
             var cCTitle = new Column
             {
                 Dimension = dClassification,
+                Name = "Title",
+            };
+
+            var cATitle = new Column
+            {
+                Dimension = dActivity,
                 Name = "Title",
             };
             var cReferenceNumber = new Column
@@ -55,12 +76,6 @@ namespace HtmlGenerator
                 Name = "Folder",
             };
 
-            var dActivity = new Dimension
-            {
-                Table = "dActivity",
-                PrimaryKey = "GlobalId",
-            };
-
             var cGlobalId = new Column
             {
                 Dimension = dActivity,
@@ -79,12 +94,6 @@ namespace HtmlGenerator
                 Name = "Description",
             };
 
-            var dUser = new Dimension
-            {
-                Table = "dUser",
-                PrimaryKey = "ResourceId",
-            };
-
             var cResourceId = new Column
             {
                 Dimension = dUser,
@@ -101,20 +110,28 @@ namespace HtmlGenerator
                 Dimension = dUser,
                 Name = "Department"
             };
-
+            //fact table
             var fActivity = new FactTable
             {
                 Table = "fActivity",
                 Dimensions = new Dimension[] { dActivity, dUser, dClassification },
-                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName", "Minutes", "Duration", "Week","Day" }
+                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName", "Minutes", "Duration", "Week", "Day" }
             };
-
             var cfGlobalId = new Column
             {
                 Dimension = fActivity,
                 Name = "GlobalId"
             };
-
+            var cfDay = new Column
+            {
+                Dimension = fActivity,
+                Name = "Day",
+            };
+            var cfWeek = new Column
+            {
+                Dimension = fActivity,
+                Name = "Week"
+            };
             var cfObjectId = new Column
             {
                 Dimension = fActivity,
@@ -141,12 +158,13 @@ namespace HtmlGenerator
                 Dimension = fActivity,
                 Name = "Minutes"
             };
-
             var cfDuration = new Column
             {
                 Dimension = fActivity,
                 Name = "Duration"
             };
+
+            //reports
             var timesheetReport = new Report
             {
                 FactTable = fActivity,
@@ -196,89 +214,110 @@ namespace HtmlGenerator
             var activityListReport = new Report
             {
                 FactTable = fActivity,
-                Data = new[] {
-                        new Grouping(){
-                            Column = cfUtcStart,
-                            Group = false
-                        },
-                        new Grouping(){
-                            Column = cFullName,
-                            Group = false
-                        },
-                        new Grouping(){
-                            Column = cType,
-                            Group = false,
-                        } ,
-                        new Grouping(){
-                            Column = cDescription,
-                            Group =false
-                        },
-                        new Grouping(){
-                            Column = cFolder,
-                            Group = false
-                        }
+                Data = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cfUtcStart,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cFullName,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cType,
+                        Group = false,
+                    },
+                    new Grouping()
+                    {
+                        Column = cDescription,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cFolder,
+                        Group = false
+                    }
                 }
             };
 
             var adHocBillable = new Report
             {
                 FactTable = fActivity,
-                Data = new[] {
-                     new Grouping(){
+                Data = new[]
+                {
+                    new Grouping()
+                    {
                         Column = cfUtcStart,
                         Group = false
                     },
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cFolder,
                         Group = false
                     },
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cFullName,
                         Group = false
                     },
-                    new Grouping(){
-                        Column  = cCTitle,
+                    new Grouping()
+                    {
+                        Column = cCTitle,
                         Group = false
                     },
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cfMinutes,
                         Group = false
                     },
 
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cFolder,
                         Group = false
                     },
                 },
-                Rows = new[] {
-                     new Grouping(){
-                         Column = cFolder,
-                         Group = true
-                     }
-                 }
+                Rows = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cFolder,
+                        Group = true
+                    }
+                }
             };
 
             var topicAllocation = new Report()
             {
                 FactTable = fActivity,
-                Data = new[] {
-                    new Grouping(){
+                Data = new[]
+                {
+                    new Grouping()
+                    {
                         Column = cFolder,
                         Group = false
                     },
-                    new Grouping(){
-                         Column = cCTitle,
-                         Group = false
+                    new Grouping()
+                    {
+                        Column = cCTitle,
+                        Group = false
                     },
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cType,
                         Group = false
                     },
-                    new Grouping(){
+                    new Grouping()
+                    {
                         Column = cFullName,
                         Group = false
                     },
-                    new Grouping() {
+                    new Grouping()
+                    {
                         Column = cfDuration,
                         Group = false
                     }
@@ -288,24 +327,30 @@ namespace HtmlGenerator
             var classificationAllocation = new Report()
             {
                 FactTable = fActivity,
-                Data = new[] {
-                    new Grouping(){
+                Data = new[]
+                {
+                    new Grouping()
+                    {
                         Column = cFolder,
                         Group = false
                     },
-                      new Grouping(){
+                    new Grouping()
+                    {
                         Column = cCTitle,
                         Group = false
                     },
-                        new Grouping(){
+                    new Grouping()
+                    {
                         Column = cActivityType,
                         Group = false
                     },
-                         new Grouping(){
+                    new Grouping()
+                    {
                         Column = cFullName,
                         Group = false
                     },
-                         new Grouping(){
+                    new Grouping()
+                    {
                         Column = cfDuration,
                         Group = false
                     },
@@ -313,18 +358,99 @@ namespace HtmlGenerator
                 }
             };
 
+            var applicationSummary = new Report()
+            {
+                FactTable = fActivity,
+                Data = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cFullName,
+                        Group = false
+                    },
+
+                    new Grouping()
+                    {
+                        Column = cDepartment,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cFolder,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cATitle,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cfDuration,
+                        Group = false
+                    },
+                }
+            };
+
+            var weeklyTimesheet = new Report
+            {
+                FactTable = fActivity,
+                Data = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cfUtcStart,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cfUtcFinish,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cfDuration,
+                        Group = false
+                    },
+                    new Grouping()
+                    {
+                        Column = cfDay,
+                        Group = true
+                    },
+                },
+                Rows = new[]
+                {
+                    new Grouping()
+                    {
+                        Column = cFullName,
+                        Group = true
+                    },
+                    new Grouping()
+                    {
+                        Column = cfWeek,
+                        Group = true
+                    },
+                    new Grouping()
+                    {
+                        Column = cfObjectId,
+                        Group = true
+                    },
+                    new Grouping()
+                    {
+                        Column = cCTitle,
+                        Group = true
+                    },
+                },
+            };
             CreateSQLFile(timesheetReport, "TimesheetReport");
             CreateSQLFile(activityListReport, "ActivityListReport");
             CreateSQLFile(topicAllocation, "TopicAllocationReport");
             CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
+            CreateSQLFile(applicationSummary, "ApplicationSummary"); //sum and count --measure
+            CreateSQLFile(adHocBillable, "AdHocBillable"); //pivot days
+            CreateSQLFile(weeklyTimesheet, "WeeklyTimesheet"); //sum for total hours, pivot days
 
-            // CreateSQLFile(weeklyTimesheet, "weeklyTimesheet");
-            //CreateSQLFile(timesheet, "timesheet");
-            // CreateSQLFile(classificationAllocation, "classificationAllocation");
-            //CreateSQLFile(topicAllocation, "topicAllocation");
-
-
-           // CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
+            // CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
             //CreateReportFile(timesheet, "timesheet");
             //CreateReportFile(classificationAllocation, "classificationAllocation");
             //CreateReportFile(topicAllocation, "topicAllocation");
@@ -348,3 +474,13 @@ namespace HtmlGenerator
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
