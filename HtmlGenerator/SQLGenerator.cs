@@ -35,12 +35,25 @@ namespace HtmlGenerator
         public static string SelectColumns(List<Column> columns)
         {
             var sql = "select\n\t";
-            for (var i = 0; i < columns.Count; i++)
+            foreach (var c in columns)
             {
-                if (i == columns.Count - 1)
-                    sql = sql + columns[i].Dimension.Table+"."+columns[i].Name;
+                if (c == columns.Last())
+                    sql = sql + c.Dimension.Table+ "."+ c.Name;
                 else
-                    sql = sql + columns[i].Dimension.Table + "." + columns[i].Name + ",\n\t";
+                    sql = sql + c.Dimension.Table + "." + c.Name + ",\n\t";
+            }
+            return sql;
+        }
+
+        public static string SelectMeasures(Measure[] measures)
+        {
+            var sql=string.Empty;
+            foreach (var m in measures)
+            {
+                if (m == measures.Last())
+                    sql = m.Aggregation + " ( " + m.Expression + " ) as " + m.Name;
+                else
+                    sql = m.Aggregation + " ( " + m.Expression + " ) as " + m.Name +",";
             }
             return sql;
         }
@@ -66,7 +79,7 @@ namespace HtmlGenerator
         {
             var allCol = GetAllColumns(report);
             var selectColumns = SelectColumns(allCol);
-            selectColumns = selectColumns + ",\n\tMeasure";
+            var selectMeasures = SelectMeasures(report.Measures);
             var  sql = selectColumns + "\nfrom (\n" + fsql + ") as "+ report.FactTable.Table;
             return report.FactTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + report.FactTable.Table + "." + dim.PrimaryKey);
         }

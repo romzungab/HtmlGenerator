@@ -11,9 +11,8 @@ namespace HtmlGenerator
     public class Column
     {
         public Dimension Dimension { get; set; }
-
         public string Name { get; set; }
-        //public string[] Values { get; set; }
+        public string Expression { get; set; }
     }
 
     public class Grouping
@@ -22,9 +21,9 @@ namespace HtmlGenerator
         public bool Group { get; set; }
     }
 
-    public class DimensionValue
+    public class ColumnValue
     {
-        public Dimension Dimension { get; set; }
+        public Column Column { get; set; }
         public object Value { get; set; }
     }
 }

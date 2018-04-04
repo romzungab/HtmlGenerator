@@ -5,6 +5,7 @@
         public FactTable FactTable { get; set; }
         public Grouping[] Rows { get; set; }
         public Grouping[] Columns { get; set; }
+        public Measure[] Measures { get; set; }
         public ReportDataRow[] Data { get; set; }
 
         public Report()
@@ -15,14 +16,10 @@
 
     public class ReportDataRow
     {
-        public DimensionValue[] DimensionValues { get; set; }
-        public Measure Measure { get; set; }
+        public ColumnValue[] ColumnValues { get; set; }
+        public MeasureValue[] MeasureValues { get; set; }
     }
 
-    public class Measure
-    {
-        public string Expression { get; set; }
-        public string AggregationFunction { get; set; }
-    }
+
 }
 

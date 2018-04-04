@@ -26,54 +26,26 @@ namespace HtmlGenerator
                 PrimaryKey = "ResourceId",
             };
 
-            //columns
+            //dClassification columns
             var cObjectId = new Column
             {
                 Dimension = dClassification,
                 Name = "ObjectId",
             };
+
             var cCTitle = new Column
             {
                 Dimension = dClassification,
                 Name = "Title",
             };
 
+            //dActivity columns
             var cATitle = new Column
             {
                 Dimension = dActivity,
                 Name = "Title",
             };
-            var cReferenceNumber = new Column
-            {
-                Dimension = dClassification,
-                Name = "ReferenceNumber",
-            };
-            var cType = new Column
-            {
-                Dimension = dClassification,
-                Name = "Type",
-            };
-            var cIsPersonal = new Column
-            {
-                Dimension = dClassification,
-                Name = "IsPersonal",
-            };
-            var cIsPrivate = new Column
-            {
-                Dimension = dClassification,
-                Name = "IsPrivate",
-            };
-            var cIsArchived = new Column
-            {
-                Dimension = dClassification,
-                Name = "IsArchived",
-            };
-            var cFolder = new Column
-            {
-                Dimension = dClassification,
-                Name = "Folder",
-            };
-
+          
             var cGlobalId = new Column
             {
                 Dimension = dActivity,
@@ -92,6 +64,7 @@ namespace HtmlGenerator
                 Name = "Description",
             };
 
+           //dUser columns
             var cResourceId = new Column
             {
                 Dimension = dUser,
@@ -108,29 +81,24 @@ namespace HtmlGenerator
                 Dimension = dUser,
                 Name = "Department"
             };
+
             //fact table
             var fActivity = new FactTable
             {
                 Table = "fActivity",
                 Dimensions = new Dimension[] { dActivity, dUser, dClassification },
-                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName", "Minutes", "Duration", "Week", "Day" }
+                Columns = new[] { "GlobalId", "ObjectId", "ResourceId", "UTCStart", "UTCFinish", "HostName"}
             };
+
+            //fActivity columns
+
             var cfGlobalId = new Column
             {
                 Dimension = fActivity,
                 Name = "GlobalId"
             };
-            var cfDay = new Column
-            {
-                Dimension = fActivity,
-                Name = "Day",
-            };
-            var cfWeek = new Column
-            {
-                Dimension = fActivity,
-                Name = "Week"
-            };
-            var cfObjectId = new Column
+
+           var cfObjectId = new Column
             {
                 Dimension = fActivity,
                 Name = "ObjectId"
@@ -141,25 +109,56 @@ namespace HtmlGenerator
                 Dimension = fActivity,
                 Name = "UTCStart"
             };
+
             var cfUtcFinish = new Column
             {
                 Dimension = fActivity,
                 Name = "UTCFinish"
             };
+
             var cfHostName = new Column
             {
                 Dimension = fActivity,
                 Name = "HostName"
             };
+
             var cfMinutes = new Column
             {
                 Dimension = fActivity,
                 Name = "Minutes"
             };
+
             var cfDuration = new Column
             {
                 Dimension = fActivity,
-                Name = "Duration"
+                Name = "Duration",
+                Expression = "datediff(s, fActivity.UTCStart, fActivity.UTCFinish)/ 60.0"
+            };
+
+            var cfDay = new Column
+            {
+                Dimension = fActivity,
+                Name = "Day",
+            };
+
+            var cfDate = new Column
+            {
+                Dimension = fActivity,
+                Name = "Date",
+                Expression = "cast(fActivity.UTCStart) as date)"
+            };
+
+            var cfWeek = new Column
+            {
+                Dimension = fActivity,
+                Name = "Week",
+                Expression = "dateadd(dd, -((@@datefirst - 2 + datepart(dw, fActivity.UTCStart)) % 7), cast(fActivity.UTCStart as date))",
+            };
+            var cfMonth = new Column
+            {
+                Dimension = fActivity,
+                Name = "Month",
+                Expression = "dateadd(dd, -((@@datefirst - 2 + datepart(dw, fActivity.UTCStart)) % 7), cast(fActivity.UTCStart as date))",
             };
 
             //reports
@@ -206,7 +205,8 @@ namespace HtmlGenerator
                         Column = cfHostName,
                         Group = true
                     }
-                }
+                },
+               
             };
 
             var activityListReport = new Report
