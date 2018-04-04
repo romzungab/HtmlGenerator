@@ -9,6 +9,5 @@ namespace HtmlGenerator
     public class FactTable
     {
         public Dimension[] Dimensions { get; set; }
-        
     }
 }

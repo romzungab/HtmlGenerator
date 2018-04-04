@@ -22,6 +22,7 @@ namespace HtmlGenerator
                 ColName = "Kind",
                 Values = new[] { "Business", "Leave", "Unclassified", "Break" },
             };
+
             var classificationFolder = new Dimension
             {
                 Table = "dClassification",
@@ -287,10 +288,10 @@ namespace HtmlGenerator
             // CreateSQLFile(activityList, "activityList");
 
             CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
-            //CreateReportFile(timesheet, "timesheet");
-            //CreateReportFile(classificationAllocation, "classificationAllocation");
-            //CreateReportFile(topicAllocation, "topicAllocation");
-            //CreateReportFile(activityList, "activityList");
+            CreateReportFile(timesheet, "timesheet");
+            CreateReportFile(classificationAllocation, "classificationAllocation");
+            CreateReportFile(topicAllocation, "topicAllocation");
+            CreateReportFile(activityList, "activityList");
         }
 
         private static void CreateReportFile(Report report, string reportName)

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace HtmlGenerator
 {
+    [DebuggerDisplay("{Table}")]
     public class Dimension
     {
         public string Table { get; set; }
