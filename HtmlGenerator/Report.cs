@@ -15,7 +15,7 @@
 
     public class ReportDataRow
     {
-        public DimensioValue[] DimensionValues { get; set; }
+        public DimensionValue[] DimensionValues { get; set; }
         public Measure Measure { get; set; }
     }
 

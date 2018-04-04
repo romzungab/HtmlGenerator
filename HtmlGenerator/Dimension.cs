@@ -22,7 +22,7 @@ namespace HtmlGenerator
         public bool Group { get; set; }
     }
 
-    public class DimensioValue
+    public class DimensionValue
     {
         public Dimension Dimension { get; set; }
         public object Value { get; set; }
