@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using HtmlGenerator;
 
 namespace HtmlGenerator
 {
@@ -168,7 +166,7 @@ namespace HtmlGenerator
             var timesheetReport = new Report
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -214,7 +212,7 @@ namespace HtmlGenerator
             var activityListReport = new Report
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -247,7 +245,7 @@ namespace HtmlGenerator
             var adHocBillable = new Report
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -294,7 +292,7 @@ namespace HtmlGenerator
             var topicAllocation = new Report()
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -327,7 +325,7 @@ namespace HtmlGenerator
             var classificationAllocation = new Report()
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -361,7 +359,7 @@ namespace HtmlGenerator
             var applicationSummary = new Report()
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {
@@ -395,7 +393,7 @@ namespace HtmlGenerator
             var weeklyTimesheet = new Report
             {
                 FactTable = fActivity,
-                Data = new[]
+                Columns = new[]
                 {
                     new Grouping()
                     {

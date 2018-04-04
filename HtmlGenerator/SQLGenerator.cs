@@ -16,7 +16,7 @@ namespace HtmlGenerator
         private static List<Column> GetAllColumns(Report report)
         {
             var allColumns = new List<Column>();
-            foreach (var c in report.Data)
+            foreach (var c in report.Columns)
             {
                 if (allColumns.Contains(c.Column))
                     continue;

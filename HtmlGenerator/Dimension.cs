@@ -21,6 +21,12 @@ namespace HtmlGenerator
         public Column Column { get; set; }
         public bool Group { get; set; }
     }
+
+    public class DimensioValue
+    {
+        public Dimension Dimension { get; set; }
+        public object Value { get; set; }
+    }
 }
 
 
