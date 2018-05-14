@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HtmlGenerator
+﻿namespace HtmlGenerator
 {
-    public class FactTable: Dimension
+    public class FactTable: ViewSource
     {
         public Dimension[] Dimensions { get; set; }
-        public string[] Columns { get; set; }
-
+        public Measure[] Measures { get; set; }
     }
 
-    public class Measure
+    public class Measure: Column
     {
-        public string Name { get; set; }
-        public string Expression { get; set; }
         public string Aggregation { get; set; }
-
     }
 
     public class MeasureValue
