@@ -43,10 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FactTable.cs" />
-    <Compile Include="Dimension.cs" />
+    <Compile Include="Reporting.cs" />
     <Compile Include="SQLGenerator.cs" />
-    <Compile Include="Report.cs" />
     <Compile Include="ReportGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

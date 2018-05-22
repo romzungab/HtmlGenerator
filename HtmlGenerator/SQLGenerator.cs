@@ -1,120 +1,92 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-
 
 namespace HtmlGenerator
 {
-    public static class SQLGenerator
+    public class SQLGenerator
     {
-        public static string BuildSQL(Report report)
+        private readonly Report _report;
+
+        public SQLGenerator(Report report)
         {
-            //with the assumption that there is already a fact table
-            var sql = JoinFactTableWithDimensions(SelectFromFactTable(report), report);
-            if (report.Measures != null)
-                sql = AddGroupBy(sql, report);
-            return sql;
+            _report = report;
         }
 
-        //private static IEnumerable<Grouping> GetAllColumns(Report report)
-        //{
-        //    var allColumns = new List<Grouping>();
-        //    foreach (var group in report.Columns)
-        //    {
-        //        if (allColumns.Contains(group))
-        //            continue;
-        //        else allColumns.Add(group);
-        //    }
-
-        //    foreach (var e in report.Rows)
-        //    {
-        //        if (allColumns.Contains(e.Column))
-        //            continue;
-        //        else allColumns.Add(e.Column);
-        //    }
-
-        //    return allColumns;
-        //}
-
-        public static string SelectColumns(Grouping[] groups)
+        public string BuildSQL()
         {
-            var sql = "select\n\t";
-            foreach (var g in groups)
+            const string factTable = "f";
+
+            var joins = new List<string>();
+            var selects = new List<string>();
+            var groupBys = new List<string>();
+
+            foreach (var gr in GetReportColumns().GroupBy(da => da.Dimension))
             {
-                if (string.IsNullOrEmpty(g.Column.Expression))
-                {
-                    if (g == groups.Last())
-                        sql = sql + g.Source.Table + "." + g.Column.Name;
-                    else
-                        sql = sql + g.Source.Table + "." + g.Column.Name + ",\n\t";
-                }
-                else
-                {
-                    if (g == groups.Last())
-                        sql = sql + g.Column.Expression + " " + g.Column.Name;
-                    else
-                        sql = sql + g.Column.Expression + " " + g.Column.Name + ",\n\t";
-                }
+                var dim = gr.Key;
+                var alias = dim.Table != null ? $"d{joins.Count}" : factTable;
+
+                if (dim.Table != null)
+                    joins.Add($"left join {dim.Table} [{alias}] on [{alias}].[Id] = [{factTable}].[{dim.Table}Id]");
+
+                groupBys.AddRange(gr.Select(da => $"{da.Expression(alias)}"));
+                selects.AddRange(gr.Select(da => $"{da.Expression(alias)} [{da.Name}]"));
             }
 
-            return sql;
+            selects.AddRange(_report.Measures.Select(m => $"{m.AggregationFunction}({m.Expression(factTable)}) [{m.Name}]"));
+
+            return $"select {string.Join(",\n\t", selects)}\n" +
+                $"from {_report.FactTable.Table} [{factTable}]\n" +
+                $"{string.Join("\n", joins)}\n" +
+                $"group by {string.Join(", ", groupBys)}";
         }
 
-        public static string SelectMeasures(Measure[] measures)
+        public DimensionAttribute[] GetReportColumns()
         {
-            var sql = ",\n\t";
-            foreach (var m in measures)
-            {
-                if (m == measures.Last())
-                    sql += m.Aggregation + " ( " + m.Expression + " ) as " + m.Name;
-                else
-                    sql += m.Aggregation + " ( " + m.Expression + " ) as " + m.Name + ",\n\t";
-            }
-
-            return sql;
+            return _report.Columns.Select(x => x.Attribute).Concat(_report.Rows).ToArray();
         }
 
         public static string SelectFromFactTable(Report report)
         {
+            var dims = GetReportDimensions(report);
             var sql = "select\n\t";
-            sql = sql + report.FactTable.Table + ".*\n\t";
-            sql = sql + "from " + report.FactTable.Table + "\n";
-          
-            return sql;
-        }
+            var cols = string.Empty;
+            var measures = string.Empty;
 
-        public static string JoinFactTableWithDimensions(string fsql, Report report)
-        {
-            var selectColumns = SelectColumns(report.Columns.Concat(report.Rows).ToArray());
-            var selectMeasures = string.Empty;
-            if (report.Measures != null && report.Measures.Length > 0)
-                selectMeasures = SelectMeasures(report.Measures);
-            var sql = selectColumns + " " + selectMeasures + "\nfrom (\n" + fsql + ") as " + report.FactTable.Table;
-            return report.FactTable.Dimensions.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + report.FactTable.Table + "." + dim.PrimaryKey);
-        }
-
-        public static string AddGroupBy(string fsql, Report report)
-        {
-            var allCols = report.Columns.Concat(report.Rows).ToArray();
-            var sql = fsql + "\ngroup by ";
-            foreach (var c in allCols)
+            foreach (var d in dims)
             {
-                if (c.Column.GroupBys != null && c.Column.GroupBys.Length > 0)
+                if (string.IsNullOrEmpty(d.Table))
+                    cols += $"f.{d.Name}, ";
+                else
+                    cols += $"f.{d.Table}Id, ";
+            }
+            var groupBy = cols;
+
+            foreach (var m in report.Measures)
+            {
+                if (m == report.Measures.Last())
                 {
-                    sql = c.Column.GroupBys.Aggregate(sql, (current, t) => current + t);
+                    measures += $"{m.AggregationFunction} ({m.Expression("f")}) as {m.Name}\n"; ;
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(c.Column.Expression))
-                        sql += c.Source.Table + "." + c.Column.Name;
-                    else
-                        sql += c.Column.Expression ;
+                    measures += $"{m.AggregationFunction} ({m.Expression("f")}) as {m.Name},";
                 }
-                if(c != allCols.LastOrDefault())
-                    sql += ",\n";
             }
 
+            sql = sql + cols + measures;
+            sql = sql + "from " + report.FactTable.Table + " f \n";
+
+            //TODO: add where clause for filters here
+
+            if (report.Measures != null)
+                sql = sql + "group by " + groupBy + "\n";
+
             return sql;
+        }
+
+        private static IEnumerable<Dimension> GetReportDimensions(Report report)
+        {
+            return report.Columns.Select(c => c.Attribute).Concat(report.Rows).Select(da => da.Dimension).Distinct();
         }
     }
 }
