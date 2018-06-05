@@ -26,6 +26,12 @@ namespace HtmlGenerator
                 Table = "dActivity"
             };
 
+            var dParticipant = new Dimension
+            {
+                Name = "Participant",
+                Table = "dParticipant"
+            };
+
             var dLeave = new Dimension
             {
                 Name = "Leave",
@@ -34,74 +40,133 @@ namespace HtmlGenerator
 
             var dDate = new Dimension
             {
-                Name ="Date",
+                Name = "Date",
+                Table = null
+            };
+
+            var dHost = new Dimension
+            {
+                Name = "Host",
                 Table = null
             };
 
             //dClassification columns
-            var cReferenceNumber = new DimensionAttribute("ReferenceNumber")
+            var cTaskStart = new DimensionAttribute("StartDateTime")
             {
+                Name = "TaskStart",
+                Dimension = dClassification
+            };
+            var cTaskFinish = new DimensionAttribute("FinishDateTime")
+            {
+                Name = "TaskFinish",
+                Dimension = dClassification
+            };
+            var cCreatedDateTime = new DimensionAttribute("CreatedDateTime")
+            {
+                Name = "CreatedDateTime",
+                Dimension = dClassification
+            };
+            var cDueDateTime = new DimensionAttribute("DueDateTime")
+            {
+                Name = "DueDateTime",
+                Dimension = dClassification
+            };
+            var cCompletedDate = new DimensionAttribute("ActualCompletionDateTime")
+            {
+                Name = "CompletedDate",
+                Dimension = dClassification
+            };
+            var cNotes = new DimensionAttribute("Notes")
+            {
+                Name = "Notes",
                 Dimension = dClassification
             };
 
-            var cType = new DimensionAttribute("dClassification.Type")
+            var cReferenceNumber = new DimensionAttribute("ReferenceNumber")
+            {
+                Name = "ReferenceNumber",
+                Dimension = dClassification
+            };
+
+            var cType = new DimensionAttribute("Type")
             {
                 Name = "Type",
                 Dimension = dClassification
             };
 
-            var cFolder = new DimensionAttribute("dClassification.Folder")
+            var cFolder = new DimensionAttribute("Folder")
             {
                 Name = "Folder",
                 Dimension = dClassification
             };
 
-            var cParent = new DimensionAttribute("dClassification.Parent")
+            var cAssignedResource = new DimensionAttribute("AssignedResource")
+            {
+                Name = "AssignedResource",
+                Dimension = dClassification
+            };
+
+            var cTaskStatus = new DimensionAttribute("TaskStatus")
+            {
+                Name = "TaskStatus",
+                Dimension = dClassification
+            };
+
+            var cTaskPriority = new DimensionAttribute("TaskPriority")
+            {
+                Name = "TaskPriority",
+                Dimension = dClassification
+            };
+
+            var cParent = new DimensionAttribute("Parent")
             {
                 Name = "Parent",
                 Dimension = dClassification
             };
 
-            var cIsPersonal = new DimensionAttribute("dClassification.IsPersonal")
+            var cIsPersonal = new DimensionAttribute("IsPersonal")
             {
                 Name = "IsPersonal",
                 Dimension = dClassification
             };
 
-            var cIsPrivate = new DimensionAttribute("dClassification.IsPrivate")
+            var cIsPrivate = new DimensionAttribute("IsPrivate")
             {
                 Name = "IsPrivate",
                 Dimension = dClassification
             };
 
-            var cIsArchived = new DimensionAttribute("dClassification.IsArchived")
+            var cIsArchived = new DimensionAttribute("IsArchived")
             {
                 Name = "IsArchived",
                 Dimension = dClassification
             };
 
-            var cCTitle = new DimensionAttribute(t => "case" +
-                $"\n\twhen {t}.dClassificationId is null then \'[Unclassified]\'" +
-                $"\n\telse dClassification.Title" +
-                $"\n\tend as Title")
+            var cActualWork = new DimensionAttribute("Actualwork")
             {
-                Name = "Title",
+                Name = "ActualWork",
                 Dimension = dClassification
             };
 
-            var cClassification = new DimensionAttribute(t => $"case " +
-                $"\n\t\twhen {t}.IsArchived = 1 then \'[Archived]\'" +
-                $"\n\t\telse coalesce(dClassification.Parent, \'-\')" +
-                $"\n\tend Classification")
+            var cTotalWork = new DimensionAttribute("TotalWork")
             {
-                Name = "Classification",
+                Name = "TotalWork",
+                Dimension = dClassification
+            };
+
+            var cCTitle = new DimensionAttribute(t => "case" +
+                $"\n\twhen {t}.Id is null then \'[Unclassified]\'" +
+                $"\n\telse {t}.Title" +
+                $"\n\tend")
+            {
+                Name = "Title",
                 Dimension = dClassification
             };
 
             //dActivity columns
             var cATitle = new DimensionAttribute("Title")
             {
-                Name = "Title",
+                Name = "ApplicationName",
                 Dimension = dActivity
             };
 
@@ -116,11 +181,30 @@ namespace HtmlGenerator
                 Name = "Description",
                 Dimension = dActivity
             };
+
+            var cObjectDescription = new DimensionAttribute("ObjectDescription")
+            {
+                Name = "ObjectDescription",
+                Dimension = dActivity
+            };
+
+            var cUtcStartDateTime = new DimensionAttribute("UtcStartDateTime")
+            {
+                Name = "UtcStartDateTime",
+                Dimension = dActivity
+            };
+
+            var cUtcFinishDateTime = new DimensionAttribute("UtcFinishDateTime")
+            {
+                Name = "UtcFinishDateTime",
+                Dimension = dActivity
+            };
             var cHostName = new DimensionAttribute("HostName")
             {
                 Name = "HostName",
-                Dimension = dActivity
+                Dimension = dHost
             };
+
 
             //dUser columns
             var cFullName = new DimensionAttribute("FullName")
@@ -145,24 +229,26 @@ namespace HtmlGenerator
                 Dimension = dUser
             };
 
-            var cLeaveTime = new DimensionAttribute("LeaveTime")
+            var cLeaveStatus = new DimensionAttribute("Status")
             {
-                Name = "LeaveTime",
+                Name = "LeaveStatus",
                 Dimension = dLeave
             };
-            var cStatus = new DimensionAttribute("Status")
-            {
-                Name = "Status",
-                Dimension = dLeave
-            };
+
             var cManagerNote = new DimensionAttribute("ManagerNote")
             {
                 Name = "ManagerNote",
                 Dimension = dLeave
             };
+
             var cPayrollNote = new DimensionAttribute("PayrollNote")
             {
                 Name = "PayrollNote",
+                Dimension = dLeave
+            };
+            var cLReferenceNumber = new DimensionAttribute(("ReferenceNumber"))
+            {
+                Name = "ReferenceNumber",
                 Dimension = dLeave
             };
             var cLeaveType = new DimensionAttribute("LeaveType")
@@ -170,23 +256,17 @@ namespace HtmlGenerator
                 Name = "LeaveType",
                 Dimension = dLeave
             };
-            var cStartTime = new DimensionAttribute("StartTime")
+            var cStartDateTime = new DimensionAttribute("StartDateTime")
             {
-                Name = "StartTime",
-                Dimension = dLeave
+                Name = "First Day of Leave",
+                Dimension = dLeave,
             };
-            var cFinishTime = new DimensionAttribute("FininshTime")
+            var cFinishDateTime = new DimensionAttribute("FinishDateTime")
             {
-                Name = "FinishTime",
-                Dimension = dLeave
+                Name = "Last Day of Leave",
+                Dimension = dLeave,
             };
-
-            //var cMinutes = new DimensionAttribute(t => $"floor(ceiling({t}.Duration + 30 - 1) / 30) * 30 NearestThirtyMinutes")
-            //{
-            //    Name = "NeareasThirtyMinutes",
-            //    Dimension = dActivity
-            //};
-
+           
             var cDate = new DimensionAttribute(t => $"cast({t}.[Date] as Date)")
             {
                 Name = "Date",
@@ -211,48 +291,71 @@ namespace HtmlGenerator
                 Dimension = dDate
             };
 
+            var cRate = new DimensionAttribute("Rate")
+            {
+                Name = "Rate",
+                Dimension = dParticipant
+            };
+
+            var cOtherRate = new DimensionAttribute("OtherRate")
+            {
+                Name = "OtherRate",
+                Dimension = dParticipant
+            };
+
+            var cParticipantRoleId = new DimensionAttribute("ParticipantRoleId")
+            {
+                Name = "ParticipantRoleId",
+                Dimension = dParticipant
+            };
+
+
+            var cRole = new DimensionAttribute("Role")
+            {
+                Name = "Role",
+                Dimension = dParticipant
+            };
+
             var mActiveCount = new Measure("ActiveCount")
             {
                 AggregationFunction = "sum",
                 Name = "ActiveCount",
             };
-            //var mAllocatedWork = new Measure()
-            //{
-            //    Name = "AllocatedWork",
-            //};
-            //var mActiveTime = new Measure
-            //{
-            //    Name = "ActiveTime"
-            //};
+
 
             //dimensions
-            var cLDuration = new Measure(t => $"datediff(ms, {t}.StartTime, fLeave.FinishTime) / 1000 Duration")
-            {
-                Name = "Duration",
-            };
 
             //add attributes to dimensions
-            dActivity.Attributes = new[] { cATitle, cActivityType, cDescription, cHostName };
+            dActivity.Attributes = new[] { cATitle, cActivityType, cDescription, cObjectDescription, cUtcStartDateTime, cUtcFinishDateTime };
             dUser.Attributes = new[] { cUserName, cFullName, cDepartment, cRegionId };
-            dClassification.Attributes = new[] {cIsArchived,cIsPersonal,cReferenceNumber, cCTitle, cFolder, cParent };
-            dDate.Attributes = new[] {cDate, cWeek, cMonth, cDay };
+            dClassification.Attributes = new[] { cIsArchived, cIsPersonal, cReferenceNumber, cCTitle, cFolder, cParent, cTaskPriority, cActualWork, cTotalWork, cTaskStatus, cDueDateTime, cCompletedDate, cTaskFinish, cTaskStart };
+            dDate.Attributes = new[] { cDate, cWeek, cMonth, cDay };
+            dParticipant.Attributes = new[] { cParticipantRoleId, cRate, cOtherRate };
+            dHost.Attributes = new[] { cHostName };
+            dLeave.Attributes = new[] { cStartDateTime, cFinishDateTime, cLeaveStatus, cManagerNote, cPayrollNote, cLeaveType, cLReferenceNumber };
 
             var fLeave = new FactTable
             {
                 Name = "Leave",
                 Table = "fLeave",
                 Dimensions = new[] { dLeave, dUser },
-                Measures = new[] { cLDuration }
             };
+
 
             var fActivity = new FactTable
             {
                 Name = "Activity",
                 Table = "fActivity",
-                Dimensions = new[] { dActivity, dUser, dClassification, dDate},
+                Dimensions = new[] { dActivity, dUser, dClassification, dDate, dHost },
             };
+            var mLDuration = new Measure("Duration")
+            {
+                Name = "Duration",
+                AggregationFunction = "sum",
+                Table = fLeave,
 
-
+            };
+            fLeave.Measures = new[] { mLDuration };
             var mDuration = new Measure("Duration")
             {
                 Name = "Duration",
@@ -286,27 +389,46 @@ namespace HtmlGenerator
                     {
                         Attribute = cDate,
                      },
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cUtcStart,
-                    //},
-                    //new ReportColumn()
-                    //{
-                    //   Attribute = cUtcFinish,
-                    //},
+
                     new ReportColumn()
                     {
-                       Attribute = cFullName,
+                        Attribute = cActivityType,
+                        Grouped = true
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCTitle,
+                        Grouped = true
                     },
                 },
                 Rows = new[]
                 {
                    cDepartment,
-                   //cHostName,
+                   cHostName,
                    cMonth,
                    cWeek,
+                   cFullName
                 },
                 Measures = new[] { mStart, mFinish, mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = cFullName,
+                        Operation = "=",
+                        Value = "Roms Ungab"
+                    },
+
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                             Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
             var activityListReport = new Report
@@ -318,11 +440,7 @@ namespace HtmlGenerator
                     {
                         Attribute = cDate,
                     },
-                   
-                    new ReportColumn()
-                    {
-                        Attribute = cFullName,
-                    },
+
                     new ReportColumn()
                     {
                         Attribute = cType,
@@ -333,15 +451,27 @@ namespace HtmlGenerator
                     },
                     new ReportColumn()
                     {
-                        Attribute = cDescription,
+                        Attribute = cObjectDescription,
                     },
                     new ReportColumn()
                     {
                         Attribute = cFolder,
                     },
                 },
-                Measures = new[] { mDuration },
-
+                Rows = new[] { cFullName },
+                Measures = new[] { mActiveCount, mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
             var adHocBillable = new Report
@@ -361,16 +491,32 @@ namespace HtmlGenerator
                     {
                         Attribute = cCTitle,
                     },
+                    new ReportColumn()
+                    {
+                        Attribute = cRate,
+                    },
                 },
                 Rows = new[] { cFolder },
-                Measures = new []
+                Measures = new[]
                 {
                     new Measure(t => $"floor(ceiling({t}.Duration + 30 - 1) / 30) * 30")
                     {
                         AggregationFunction = "sum",
                         Name = "NearestThirtyMinutes",
                         Table = fActivity,
-                    }, 
+                    },
+                },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
                 }
             };
 
@@ -396,7 +542,27 @@ namespace HtmlGenerator
                         Attribute = cFullName,
                     },
                  },
-                Measures = new[] { mDuration },
+                Measures = new[]
+                {
+                    new Measure(t => $"coalesce({t}.Duration, 0)")
+                    {
+                        AggregationFunction = "sum",
+                        Name ="AllocatedWork",
+                        Table = fActivity,
+                    }
+                },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
             var classificationAllocation = new Report()
@@ -404,10 +570,6 @@ namespace HtmlGenerator
                 FactTable = fActivity,
                 Columns = new[]
                 {
-                    new ReportColumn()
-                    {
-                        Attribute = cClassification
-                    },
                     new ReportColumn()
                     {
                         Attribute = cFolder,
@@ -430,6 +592,18 @@ namespace HtmlGenerator
                     },
                 },
                 Measures = new[] { mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
             var applicationSummary = new Report()
@@ -454,13 +628,22 @@ namespace HtmlGenerator
                     {
                         Attribute = cFolder,
                     },
-                    new ReportColumn()
-                    {
-                        Attribute = cATitle,
-                    },
+
                  },
-                Rows = new[] { cMonth, cWeek },
-                Measures = new[] { mDuration, mActiveCount }
+                Rows = new[] { cATitle, cMonth, cWeek },
+                Measures = new[] { mDuration, mActiveCount },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
             var weeklyTimesheet = new Report
@@ -468,15 +651,7 @@ namespace HtmlGenerator
                 FactTable = fActivity,
                 Columns = new[]
                 {
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cUtcStart,
-                    //},
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cUtcFinish,
-                    //},
-                    new ReportColumn()
+                   new ReportColumn()
                     {
                         Attribute = cDay,
                         Grouped = true
@@ -497,22 +672,248 @@ namespace HtmlGenerator
                         Grouped = true
                     },
                 },
-                Measures = new[] { mDuration, mActiveCount }
+                Rows = new[] { cDay },
+                Measures = new[] { mDuration, mActiveCount, mStart, mFinish },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
-            CreateSQLFile(timesheetReport, "TimesheetReport");
-            return;
-            CreateSQLFile(activityListReport, "ActivityListReport");
-            CreateSQLFile(topicAllocation, "TopicAllocationReport");
-            CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
-            CreateSQLFile(applicationSummary, "ApplicationSummary");
-            CreateSQLFile(adHocBillable, "AdHocBillable"); //rate of participant
-            CreateSQLFile(weeklyTimesheet, "WeeklyTimesheet"); //leave and public holidays pivot days
 
-            // CreateReportFile(weeklyTimesheet, "weeklyTimesheet");
-            //CreateReportFile(timesheet, "timesheet");
-            //CreateReportFile(classificationAllocation, "classificationAllocation");
-            //CreateReportFile(topicAllocation, "topicAllocation");
-            //CreateReportFile(activityList, "activityList");
+            var billableProject = new Report
+            {
+                FactTable = fActivity,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cCTitle,
+                    },
+                   },
+                Rows = new[] { cDay, cFullName, cWeek },
+                Measures = new[] { mDuration }
+            };
+
+            var allocatedWork = new Report
+            {
+                FactTable = fActivity,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cDate,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCTitle,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cType,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCreatedDateTime
+                    },
+                },
+                Rows = new[] { cFullName },
+                Measures = new[] { mDuration }
+            };
+
+            var detailBillable = new Report()
+            {
+                FactTable = fActivity,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cRole,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cFullName,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cATitle,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cType,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCTitle,
+                    },
+
+                },
+                Measures = new[] { mDuration }
+            };
+
+
+            var taskList = new Report()
+            {
+                FactTable = fActivity,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cFolder,
+                    },
+
+                    new ReportColumn()
+                    {
+                        Attribute = cDueDateTime,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cAssignedResource,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cTaskStatus,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cTaskPriority,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cTotalWork,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cNotes,
+                    },
+                },
+                Measures = new[] { mStart, mFinish, mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = cType,
+                        Operation = "=",
+                        Value = "Task"
+                    },
+                }
+
+            };
+
+
+            var projectList = new Report()
+            {
+                FactTable = fActivity,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cFolder,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCTitle
+                    },
+
+                    new ReportColumn()
+                    {
+                        Attribute = cAssignedResource,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cTaskStatus,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cDueDateTime,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cCompletedDate
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cTotalWork,
+                    },
+                },
+
+                Measures = new[] { mStart, mFinish, mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = cType,
+                        Operation = "=",
+                        Value = "Project"
+                    },
+                }
+
+            };
+            var leave = new Report()
+            {
+                FactTable = fLeave,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cStartDateTime
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute =  cFinishDateTime
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cFullName,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cLeaveType,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cLeaveStatus,
+                    }, 
+                   
+                    new ReportColumn()
+                    {
+                        Attribute = cDepartment
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cManagerNote
+                    },
+                    new ReportColumn() 
+                    {
+                        Attribute = cPayrollNote
+                    },
+               },
+                Measures = new[] { mLDuration },
+
+            };
+
+            CreateSQLFile(timesheetReport, "TimesheetReport");
+            //CreateSQLFile(activityListReport, "ActivityListReport");
+            //CreateSQLFile(topicAllocation, "TopicAllocationReport");
+            //CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
+            //CreateSQLFile(applicationSummary, "ApplicationSummary");
+            //CreateSQLFile(adHocBillable, "AdHocBillable"); //rate of participant ok
+            //CreateSQLFile(weeklyTimesheet, "WeeklyTimesheet"); //leave and public holidays ; pivot days
+            //CreateSQLFile(billableProject, "BillableProject");
+            //CreateSQLFile(allocatedWork, "AllocatedWork");
+            //CreateSQLFile(detailBillable, "DetailBillable");
+            //CreateSQLFile(taskList, "TaskList");
+            //CreateSQLFile(projectList, "ProjectList");
+
+            //CreateSQLFile(leave, "Leave");
+
         }
 
         //private static void CreateReportFile(Report report, string reportName)

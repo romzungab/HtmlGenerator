@@ -9,7 +9,7 @@ namespace HtmlGenerator
         public ReportColumn[] Columns = new ReportColumn[0];
         public DimensionAttribute[] Rows = new DimensionAttribute[0];
         public Measure[] Measures;
-        //todo: add filters? ask Vic
+        public ReportFilter[] Filters = new ReportFilter[0];
     }
 
     public class ReportColumn
@@ -66,5 +66,12 @@ namespace HtmlGenerator
         public Func<string, string> Expression;
         public string AggregationFunction;
         public FactTable Table;
+    }
+
+    public class ReportFilter
+    {
+        public DimensionAttribute Filter;
+        public string Value;
+        public string Operation;
     }
 }

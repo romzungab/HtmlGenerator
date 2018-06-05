@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters;
 
 namespace HtmlGenerator
 {
@@ -18,6 +20,7 @@ namespace HtmlGenerator
 
             var joins = new List<string>();
             var selects = new List<string>();
+            var where = new List<string>();
             var groupBys = new List<string>();
 
             foreach (var gr in GetReportColumns().GroupBy(da => da.Dimension))
@@ -26,7 +29,7 @@ namespace HtmlGenerator
                 var alias = dim.Table != null ? $"d{joins.Count}" : factTable;
 
                 if (dim.Table != null)
-                    joins.Add($"left join {dim.Table} [{alias}] on [{alias}].[Id] = [{factTable}].[{dim.Table}Id]");
+                    joins.Add($"left join {dim.Table} [{alias}] on [{alias}].[Id] = [{factTable}].[{dim.Name}Id]");
 
                 groupBys.AddRange(gr.Select(da => $"{da.Expression(alias)}"));
                 selects.AddRange(gr.Select(da => $"{da.Expression(alias)} [{da.Name}]"));
@@ -34,10 +37,18 @@ namespace HtmlGenerator
 
             selects.AddRange(_report.Measures.Select(m => $"{m.AggregationFunction}({m.Expression(factTable)}) [{m.Name}]"));
 
-            return $"select {string.Join(",\n\t", selects)}\n" +
+            if (_report.Filters.Length > 0)
+                where.AddRange(_report.Filters.Select(f => $"[{f.Filter.Name}] {f.Operation} '{f.Value}'"));
+
+            var sql = $"select {string.Join(",\n\t", selects)}\n" +
                 $"from {_report.FactTable.Table} [{factTable}]\n" +
-                $"{string.Join("\n", joins)}\n" +
-                $"group by {string.Join(", ", groupBys)}";
+                $"{string.Join("\n", joins)}\n";
+
+            if (where.Count > 0)
+                sql += $"where {string.Join(" and ", where)}\n";
+
+            sql += $"group by {string.Join(", ", groupBys)}";
+            return sql;
         }
 
         public DimensionAttribute[] GetReportColumns()
