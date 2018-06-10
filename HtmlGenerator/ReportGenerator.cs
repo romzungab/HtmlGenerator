@@ -38,16 +38,50 @@ namespace HtmlGenerator
                 Table = "dLeave"
             };
 
+            var dExpenseStatus = new Dimension()
+            {
+                Name = "Status",
+                Table = null
+            };
+
+            var dCurrency = new Dimension()
+            {
+                Name = "Currency",
+                Table = null
+            };
+            
             var dDate = new Dimension
             {
                 Name = "Date",
                 Table = null
             };
 
+            var dSubmittedBy = new Dimension
+            {
+                Name = "User",
+                Table = "dUser"
+            };
+
+            var dChangedBy = new Dimension
+            {
+                Name = "User",
+                Table = "dUser"
+            };
+
             var dHost = new Dimension
             {
                 Name = "Host",
                 Table = null
+            };
+            var dReferenceNumber = new Dimension()
+            {
+                Name = "ReferenceNumber",
+                Table = null
+            };
+            var dExpenseLog = new Dimension()
+            {
+                Name = "Log",
+                Table = "dExpenseLog"
             };
 
             //dClassification columns
@@ -246,27 +280,31 @@ namespace HtmlGenerator
                 Name = "PayrollNote",
                 Dimension = dLeave
             };
+
             var cLReferenceNumber = new DimensionAttribute(("ReferenceNumber"))
             {
                 Name = "ReferenceNumber",
                 Dimension = dLeave
             };
+
             var cLeaveType = new DimensionAttribute("LeaveType")
             {
                 Name = "LeaveType",
                 Dimension = dLeave
             };
+
             var cStartDateTime = new DimensionAttribute("StartDateTime")
             {
                 Name = "First Day of Leave",
                 Dimension = dLeave,
             };
+
             var cFinishDateTime = new DimensionAttribute("FinishDateTime")
             {
                 Name = "Last Day of Leave",
                 Dimension = dLeave,
             };
-           
+
             var cDate = new DimensionAttribute(t => $"cast({t}.[Date] as Date)")
             {
                 Name = "Date",
@@ -309,7 +347,6 @@ namespace HtmlGenerator
                 Dimension = dParticipant
             };
 
-
             var cRole = new DimensionAttribute("Role")
             {
                 Name = "Role",
@@ -322,17 +359,128 @@ namespace HtmlGenerator
                 Name = "ActiveCount",
             };
 
+            var cFromDate = new DimensionAttribute("FromDate")
+            {
+                Name = "FromDate",
+                Dimension = dDate
+            };
 
-            //dimensions
+            var cToDate = new DimensionAttribute("ToDate")
+            {
+                Name = "ToDate",
+                Dimension = dDate
+            };
+
+            var cCreatedDate = new DimensionAttribute("CreatedDate")
+            {
+                Name = "CreatedDate",
+                Dimension = dDate
+            };
+
+            var cExpenseStatus = new DimensionAttribute("Status")
+            {
+                Name = "Status",
+                Dimension = dExpenseStatus
+            };
+
+            var cCurrency = new DimensionAttribute("Currency")
+            {
+                Name = "Currency",
+                Dimension = dCurrency
+            };
+
+            var mMileage = new Measure("Mileage")
+            {
+                Name = "Mileage",
+               AggregationFunction = "sum"
+            };
+
+            var mNonChargeableExpense = new Measure("NonChargeableExpense")
+            {
+                Name = "Non Chargeable Expense",
+                AggregationFunction = ""
+            };
+
+            var mChargeableExpense = new Measure("ChargeableExpense")
+            {
+                Name = "ChargeableExpense",
+                AggregationFunction = ""
+            };
+
+            var mProcessedAmount = new Measure("ProcessedAmount")
+            {
+                Name = "ProcessedAmount",
+                AggregationFunction = ""
+            };
+
+            var cSubmittedBy = new DimensionAttribute("FullName")
+            {
+                Name = "SubmittedBy",
+                Dimension = dSubmittedBy
+            };
+
+            var cSubmittedDate = new DimensionAttribute("SubmittedDate")
+            {
+                Name = "SubmittedDate",
+                Dimension = dDate
+            };
+
+            var cChangedBy = new DimensionAttribute("FullName")
+            {
+                Name = "ChangedBy",
+                Dimension = dChangedBy
+            };
+
+            var cChangedDateTimeUTC = new DimensionAttribute("ChangedDateTimeUTC")
+            {
+                Name = "ChangedDateTimeUTC",
+                Dimension = dDate
+            };
+
+            var mTotal = new Measure(t => $"({t}.Mileage + {t}.NonChargeableExpense + {t}.ChargeableExpense)")
+            {
+                Name = "TotalSubmitted",
+                AggregationFunction = "sum"
+            };
+            
+            var cColumnName = new DimensionAttribute("ColumnName")
+            {
+                Name = "ColumnName",
+                Dimension = dExpenseLog
+            };
+            var cValue = new DimensionAttribute("Value")
+            {
+                Name = "Value",
+                Dimension = dExpenseLog
+            };
+            
+            var cEReferenceNumber = new DimensionAttribute("ReferenceNumber")
+            {
+                Name = "ReferenceNumber",
+                Dimension = dReferenceNumber
+            };
 
             //add attributes to dimensions
             dActivity.Attributes = new[] { cATitle, cActivityType, cDescription, cObjectDescription, cUtcStartDateTime, cUtcFinishDateTime };
             dUser.Attributes = new[] { cUserName, cFullName, cDepartment, cRegionId };
             dClassification.Attributes = new[] { cIsArchived, cIsPersonal, cReferenceNumber, cCTitle, cFolder, cParent, cTaskPriority, cActualWork, cTotalWork, cTaskStatus, cDueDateTime, cCompletedDate, cTaskFinish, cTaskStart };
-            dDate.Attributes = new[] { cDate, cWeek, cMonth, cDay };
+            dDate.Attributes = new[] { cDate, cWeek, cMonth, cDay, cSubmittedDate, cCreatedDate, cChangedDateTimeUTC };
             dParticipant.Attributes = new[] { cParticipantRoleId, cRate, cOtherRate };
             dHost.Attributes = new[] { cHostName };
             dLeave.Attributes = new[] { cStartDateTime, cFinishDateTime, cLeaveStatus, cManagerNote, cPayrollNote, cLeaveType, cLReferenceNumber };
+            dExpenseStatus.Attributes = new[] { cExpenseStatus };
+            dCurrency.Attributes = new[] { cCurrency };
+            dSubmittedBy.Attributes = new[] { cSubmittedBy };
+            dChangedBy.Attributes = new[] { cChangedBy};
+            dReferenceNumber.Attributes = new[] { cEReferenceNumber };
+            dExpenseLog.Attributes = new[] { cColumnName, cValue };
+
+            var fExpense = new FactTable
+            {
+                Name = "fExpense",
+                Table = "fExpense",
+                Dimensions = new[] { dExpenseStatus, dUser, dCurrency, dSubmittedBy, dChangedBy, dExpenseLog, dReferenceNumber }
+            };
 
             var fLeave = new FactTable
             {
@@ -341,13 +489,15 @@ namespace HtmlGenerator
                 Dimensions = new[] { dLeave, dUser },
             };
 
-
             var fActivity = new FactTable
             {
                 Name = "Activity",
                 Table = "fActivity",
                 Dimensions = new[] { dActivity, dUser, dClassification, dDate, dHost },
             };
+
+            fExpense.Measures = new[] {mTotal, mMileage, mNonChargeableExpense, mChargeableExpense};
+
             var mLDuration = new Measure("Duration")
             {
                 Name = "Duration",
@@ -355,6 +505,7 @@ namespace HtmlGenerator
                 Table = fLeave,
 
             };
+
             fLeave.Measures = new[] { mLDuration };
             var mDuration = new Measure("Duration")
             {
@@ -393,12 +544,12 @@ namespace HtmlGenerator
                     new ReportColumn()
                     {
                         Attribute = cActivityType,
-                        Grouped = true
+                        Pivot = true
                     },
                     new ReportColumn()
                     {
                         Attribute = cCTitle,
-                        Grouped = true
+                        Pivot = true
                     },
                 },
                 Rows = new[]
@@ -654,25 +805,14 @@ namespace HtmlGenerator
                    new ReportColumn()
                     {
                         Attribute = cDay,
-                        Grouped = true
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cFullName,
-                        Grouped = true
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cWeek,
-                        Grouped = true
+                        Pivot = true
                     },
                     new ReportColumn()
                     {
                         Attribute = cCTitle,
-                        Grouped = true
                     },
                 },
-                Rows = new[] { cDay },
+                Rows = new[] { cFullName, cWeek },
                 Measures = new[] { mDuration, mActiveCount, mStart, mFinish },
                 Filters = new[]
                 {
@@ -880,8 +1020,8 @@ namespace HtmlGenerator
                     new ReportColumn()
                     {
                         Attribute = cLeaveStatus,
-                    }, 
-                   
+                    },
+
                     new ReportColumn()
                     {
                         Attribute = cDepartment
@@ -890,7 +1030,7 @@ namespace HtmlGenerator
                     {
                         Attribute = cManagerNote
                     },
-                    new ReportColumn() 
+                    new ReportColumn()
                     {
                         Attribute = cPayrollNote
                     },
@@ -899,7 +1039,93 @@ namespace HtmlGenerator
 
             };
 
-            CreateSQLFile(timesheetReport, "TimesheetReport");
+            var expense = new Report()
+            {
+                FactTable = fExpense,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cFullName,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cSubmittedDate,
+                    }, 
+                    new ReportColumn()
+                    {
+                        Attribute = cSubmittedBy
+                    },
+                     
+                    new ReportColumn()
+                    {
+                        Attribute = cFromDate
+                    }, 
+                    new ReportColumn()
+                    {
+                        Attribute = cToDate
+                    }, 
+                    new ReportColumn()
+                    {
+                        Attribute = cExpenseStatus
+                    },
+
+                    new ReportColumn()
+                    {
+                        Attribute = cCurrency,
+                    }
+
+                },
+                Measures = new[] {mTotal}
+            };
+
+          var expenseLog = new Report()
+            {
+                FactTable = fExpense,
+                Columns = new[]
+                {
+                    new ReportColumn()
+                    {
+                        Attribute = cFullName,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cEReferenceNumber,
+                    }, 
+                  
+                    new ReportColumn()
+                    {
+                        Attribute = cFromDate
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cToDate
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cExpenseStatus
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cChangedDateTimeUTC,
+                    },
+                    new ReportColumn()
+                    {
+                        Attribute = cChangedBy,
+                    }, 
+                  new ReportColumn()
+                  {
+                      Attribute = cColumnName
+                  },
+                    new ReportColumn()
+                    {
+                        Attribute = cValue
+                    }
+                },
+                Measures = new[] { mTotal }
+            };
+
+            //CreateSQLFile(timesheetReport, "TimesheetReport");
             //CreateSQLFile(activityListReport, "ActivityListReport");
             //CreateSQLFile(topicAllocation, "TopicAllocationReport");
             //CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
@@ -913,6 +1139,10 @@ namespace HtmlGenerator
             //CreateSQLFile(projectList, "ProjectList");
 
             //CreateSQLFile(leave, "Leave");
+            CreateSQLFile(expense, "Expense Report");
+            CreateSQLFile(expenseLog, "Expense Log Report");
+            //run the query
+            //how to assign values? and create the html table ?
 
         }
 

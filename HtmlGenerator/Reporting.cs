@@ -15,7 +15,7 @@ namespace HtmlGenerator
     public class ReportColumn
     {
         public DimensionAttribute Attribute;
-        public bool Grouped;
+        public bool Pivot;
     }
 
     public class FactTable
