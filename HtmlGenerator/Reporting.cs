@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace HtmlGenerator
+namespace Reporting
 {
     public class Report
     {
@@ -75,3 +75,4 @@ namespace HtmlGenerator
         public string Operation;
     }
 }
+

@@ -1,11 +1,31 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
-namespace HtmlGenerator
+namespace Reporting
 {
     class ReportGenerator
     {
+        private const string Prefix = @"
+<style>
+table {
+   border-collapse: collapse;
+}
+
+td, th {
+   padding: .25em .5em;
+   text-align: center;
+}
+
+th {
+   background-color: #eee;
+   font-weight: 600;
+}
+</style>";
         public static void Main(string[] args)
         {
             var dClassification = new Dimension
@@ -246,6 +266,7 @@ namespace HtmlGenerator
                 Name = "FullName",
                 Dimension = dUser
             };
+
             var cUserName = new DimensionAttribute("UserName")
             {
                 Name = "UserName",
@@ -895,7 +916,19 @@ namespace HtmlGenerator
                     },
 
                 },
-                Measures = new[] { mDuration }
+                Measures = new[] { mDuration },
+                Filters = new[]
+                {
+                    new ReportFilter()
+                    {
+                        Filter = new DimensionAttribute("StartTime")
+                        {
+                            Name = "StartTime"
+                        },
+                        Operation = ">",
+                        Value = "20180101"
+                    }
+                }
             };
 
 
@@ -1061,10 +1094,12 @@ namespace HtmlGenerator
                     {
                         Attribute = cFromDate
                     }, 
+
                     new ReportColumn()
                     {
                         Attribute = cToDate
                     }, 
+
                     new ReportColumn()
                     {
                         Attribute = cExpenseStatus
@@ -1097,14 +1132,17 @@ namespace HtmlGenerator
                     {
                         Attribute = cFromDate
                     },
+
                     new ReportColumn()
                     {
                         Attribute = cToDate
                     },
+
                     new ReportColumn()
                     {
                         Attribute = cExpenseStatus
                     },
+
                     new ReportColumn()
                     {
                         Attribute = cChangedDateTimeUTC,
@@ -1137,30 +1175,48 @@ namespace HtmlGenerator
             //CreateSQLFile(detailBillable, "DetailBillable");
             //CreateSQLFile(taskList, "TaskList");
             //CreateSQLFile(projectList, "ProjectList");
-
+            //CreateSQLFile(expense, "Expense Report");
+            //CreateSQLFile(expenseLog, "Expense Log Report");
             //CreateSQLFile(leave, "Leave");
-            CreateSQLFile(expense, "Expense Report");
-            CreateSQLFile(expenseLog, "Expense Log Report");
-            //run the query
-            //how to assign values? and create the html table ?
-
+            
+            var sql = CreateSQLFile(timesheetReport, "Report");
+            CreateReportFile(timesheetReport, FetchData(sql));
         }
 
-        //private static void CreateReportFile(Report report, string reportName)
-        //{
-        //    var html = TableBuilder.BuildHtml(report);
-        //    var reportFilename = @"C:\Users\romelyn.ungab\Documents\reports\" + reportName + ".html";
-        //    File.WriteAllText(reportFilename, html);
-        //    Process.Start(reportFilename);
-        //}
+        private static DataTable FetchData(string sql)
+        {
+            var data = new DataTable();
+            using (SqlConnection sqlConn = new SqlConnection("Data Source = AKLACHIEVESVR\\SQLEXPRESS; Initial Catalog = IPFXAchieveQA; Integrated Security = False; User ID = sa; Password = kp07p@55; Connect Timeout = 30; Encrypt = False; TrustServerCertificate = False; ApplicationIntent = ReadWrite; MultiSubnetFailover = False"))
+            {
+                using (SqlCommand cmd = new SqlCommand(sql, sqlConn))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    da.Fill(data);
+                }
+            }
+            return data;
+        }
 
+        private static void CreateReportFile(Report report,  DataTable data)
+        {
+            var html = new TableBuilder(report,data);
+            var name = Path.GetTempFileName();
+            File.Delete(name);
+            name = Path.ChangeExtension(name, "html");
 
-        private static void CreateSQLFile(Report report, string reportName)
+            File.WriteAllText(name, Prefix + html.Build(true));
+            Process.Start(name);
+            Thread.Sleep(1000);
+            File.Delete(name);
+        }
+
+        private static string CreateSQLFile(Report report, string reportName)
         {
             var sql = new SQLGenerator(report).BuildSQL();
             var reportFilename = @"C:\Users\romelyn.ungab\Documents\sql\" + reportName + ".sql";
             File.WriteAllText(reportFilename, sql);
             Process.Start(reportFilename);
+            return sql;
         }
     }
 }
