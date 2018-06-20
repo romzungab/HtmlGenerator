@@ -19,7 +19,7 @@ namespace Reporting
         private readonly int _pivotedHeadersCount;
 
         public TableBuilder(Report report, DataTable data)
-            : this(report, data.Rows.Cast<DataRow>().Select(row => data.Columns.Cast<DataColumn>().ToDictionary(c => c.ColumnName, c => Convert.ToString(row[c]))))
+            : this(report, data.Rows.Cast<DataRow>().Select(row => data.Columns.Cast<DataColumn>().ToDictionary(c => c.ColumnName, c => row.IsNull(c) ? null : Convert.ToString(row[c]))))
         {
         }
 
@@ -29,7 +29,7 @@ namespace Reporting
 
             _rows = report.Rows.Select(r => r.Name).ToArray();
             _nonPivoted = report.Columns.Where(c => !c.Pivot).Select(c => c.Attribute.Name).ToArray();
-            _pivot = new Pivot(report.Columns.Where(c => c.Pivot).Select(c => c.Attribute.Name));
+            _pivot = new Pivot(report.Columns.Where(c => c.Pivot).Select(c => c.Attribute.Name), report.Measures.Length);
 
             _grouped = data
                 .GroupBy(row => _rows.Concat(_nonPivoted).ToDictionary(c => c, c => row[c]), DictionaryComparer.Default)
@@ -58,8 +58,7 @@ namespace Reporting
 
             foreach (var row in _grouped)
             {
-                if (WriteRowHeaders(sw, row, rowHeaders) || !wroteHeadersOnce)
-                {
+                if (WriteRowHeaders(sw, row, rowHeaders) || !wroteHeadersOnce){
                     wroteHeadersOnce = true;
                     WriteColumnHeaders(sw, measureHeader);
                 }
@@ -124,7 +123,7 @@ namespace Reporting
 
             if (!rowOpened) tw.WriteLine("<tr>");
 
-            for (var i = 0; i < _pivotedHeadersCount; i++)
+            for (var i = 0; i < _pivotedHeadersCount / _report.Measures.Length; i++)
                 foreach (var measure in _report.Measures)
                     tw.WriteLine($"<th>{measure.Name}</th>");
 
@@ -133,18 +132,22 @@ namespace Reporting
 
         private class Pivot
         {
+            private readonly int _measureCount;
             private readonly string[] _groups;
             private readonly Node _root = new Node(null);
-            private readonly Dictionary<object, Dictionary<Node, IEnumerable<string>>> _rows = new Dictionary<object, Dictionary<Node, IEnumerable<string>>>();
+            private readonly Dictionary<object, Dictionary<Node, IReadOnlyCollection<string>>> _rows = new Dictionary<object, Dictionary<Node, IReadOnlyCollection<string>>>();
 
-            public Pivot(IEnumerable<string> groups)
+            public Pivot(IEnumerable<string> groups, int measureCount)
             {
+                _measureCount = measureCount;
                 _groups = groups.ToArray();
             }
 
-            internal void Add(object rowKey, IReadOnlyCollection<string> groupValues, IEnumerable<string> values)
+            internal void Add(object rowKey, IReadOnlyCollection<string> groupValues, IReadOnlyCollection<string> values)
             {
                 if (groupValues.Count != _groups.Length)
+                    throw new ArgumentException();
+                if (values.Count != _measureCount)
                     throw new ArgumentException();
 
                 var node = _root;
@@ -162,11 +165,11 @@ namespace Reporting
                 return GetNodes(level).Select(node => new Header
                 {
                     Title = node.Value,
-                    Span = GetNodes(node, _groups.Length - level).Count,
+                    Span = GetNodes(node, _groups.Length - level).Count * _measureCount,
                 });
             }
 
-            public IEnumerable<IEnumerable<string>> GetValues(object rowKey)
+            public IEnumerable<IReadOnlyCollection<string>> GetValues(object rowKey)
             {
                 var row = _rows[rowKey];
 
@@ -177,7 +180,7 @@ namespace Reporting
                 }
             }
 
-            public int GetHeaderCount() => GetNodes(_groups.Length).Count;
+            public int GetHeaderCount() => GetNodes(_groups.Length).Count * _measureCount;
 
             private IList<Node> GetNodes(int level)
             {

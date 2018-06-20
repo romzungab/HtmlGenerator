@@ -10,6 +10,7 @@ namespace Reporting
         public DimensionAttribute[] Rows = new DimensionAttribute[0];
         public Measure[] Measures;
         public ReportFilter[] Filters = new ReportFilter[0];
+        public DimensionAttribute[] OrderBys = new DimensionAttribute[0];
     }
 
     public class ReportColumn
@@ -59,11 +60,12 @@ namespace Reporting
 
         public Measure(Func<string, string> expression)
         {
-            Expression = expression;
+            SortExpression = Expression = expression;
         }
 
         public string Name;
         public Func<string, string> Expression;
+        public Func<string, string> SortExpression;
         public string AggregationFunction;
         public FactTable Table;
     }
@@ -75,4 +77,3 @@ namespace Reporting
         public string Operation;
     }
 }
-

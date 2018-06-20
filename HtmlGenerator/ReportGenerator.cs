@@ -11,6 +11,7 @@ namespace Reporting
     class ReportGenerator
     {
         private const string Prefix = @"
+<meta charset='utf-8'>
 <style>
 table {
    border-collapse: collapse;
@@ -535,21 +536,21 @@ th {
                 AggregationFunction = "sum",
             };
 
-            var mStart = new Measure("StartTime")
-            {
-                Name = "Start",
-                Table = fActivity,
-                AggregationFunction = "min"
-            };
+            //var mStart = new Measure("StartTime")
+            //{
+            //    Name = "Start",
+            //    Table = fActivity,
+            //    AggregationFunction = "min"
+            //};
 
-            var mFinish = new Measure("FinishTime")
-            {
-                Name = "Finish",
-                Table = fActivity,
-                AggregationFunction = "max"
-            };
+            //var mFinish = new Measure("FinishTime")
+            //{
+            //    Name = "Finish",
+            //    Table = fActivity,
+            //    AggregationFunction = "max"
+            //};
 
-            fActivity.Measures = new[] { mActiveCount, mDuration, mStart, mFinish };
+            fActivity.Measures = new[] { mActiveCount, mDuration};//, mStart, mFinish };
 
             //reports
             var timesheetReport = new Report
@@ -581,7 +582,7 @@ th {
                    cWeek,
                    cFullName
                 },
-                Measures = new[] { mStart, mFinish, mDuration },
+                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
                 Filters = new[]
                 {
                     new ReportFilter()
@@ -634,15 +635,18 @@ th {
                 Measures = new[] { mActiveCount, mDuration },
                 Filters = new[]
                 {
-                    new ReportFilter()
+                    new ReportFilter
                     {
-                        Filter = new DimensionAttribute("StartTime")
-                        {
-                            Name = "StartTime"
-                        },
-                        Operation = ">",
-                        Value = "20180101"
-                    }
+                        Filter = cDate,
+                        Operation = "=",
+                        Value = "20180620"
+                    },
+                    new ReportFilter
+                    {
+                        Filter = cFullName,
+                        Operation = "=",
+                        Value = "Roms Ungab"
+                    },
                 }
             };
 
@@ -834,18 +838,27 @@ th {
                     },
                 },
                 Rows = new[] { cFullName, cWeek },
-                Measures = new[] { mDuration, mActiveCount, mStart, mFinish },
+                Measures = new[] { mDuration },//, mStart, mFinish },
                 Filters = new[]
                 {
-                    new ReportFilter()
+                    new ReportFilter
                     {
-                        Filter = new DimensionAttribute("StartTime")
-                        {
-                            Name = "StartTime"
-                        },
+                        Filter = cDate,
                         Operation = ">",
-                        Value = "20180101"
-                    }
+                        Value = "20180618"
+                    },
+                    new ReportFilter
+                    {
+                        Filter = cDate,
+                        Operation = "<",
+                        Value = "20180625"
+                    },
+                    new ReportFilter
+                    {
+                        Filter = cFullName,
+                        Operation = "=",
+                        Value = "Roms Ungab"
+                    },
                 }
             };
 
@@ -967,7 +980,7 @@ th {
                         Attribute = cNotes,
                     },
                 },
-                Measures = new[] { mStart, mFinish, mDuration },
+                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
                 Filters = new[]
                 {
                     new ReportFilter()
@@ -1017,7 +1030,7 @@ th {
                     },
                 },
 
-                Measures = new[] { mStart, mFinish, mDuration },
+                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
                 Filters = new[]
                 {
                     new ReportFilter()
@@ -1179,8 +1192,13 @@ th {
             //CreateSQLFile(expenseLog, "Expense Log Report");
             //CreateSQLFile(leave, "Leave");
             
-            var sql = CreateSQLFile(timesheetReport, "Report");
-            CreateReportFile(timesheetReport, FetchData(sql));
+            RunReport(timesheetReport);
+        }
+
+        private static void RunReport(Report report)
+        {
+            var sql = CreateSQLFile(report, "Report");
+            CreateReportFile(report, FetchData(sql));
         }
 
         private static DataTable FetchData(string sql)
@@ -1200,14 +1218,15 @@ th {
         private static void CreateReportFile(Report report,  DataTable data)
         {
             var html = new TableBuilder(report,data);
-            var name = Path.GetTempFileName();
+         //   var name = Path.GetTempFileName();
+            var name = @"C:\Users\romelyn.ungab\Documents\sql\report.html" ;
             File.Delete(name);
-            name = Path.ChangeExtension(name, "html");
+           // name = Path.ChangeExtension(name, "html");
 
-            File.WriteAllText(name, Prefix + html.Build(true));
+            File.WriteAllText(name, Prefix + html.Build(report.Measures.Length > 1 || !report.Columns.Any(c => c.Pivot)));
             Process.Start(name);
             Thread.Sleep(1000);
-            File.Delete(name);
+         //   File.Delete(name);
         }
 
         private static string CreateSQLFile(Report report, string reportName)
