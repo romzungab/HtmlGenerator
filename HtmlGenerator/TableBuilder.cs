@@ -4,7 +4,6 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Reporting;
 
 namespace Reporting
 {
@@ -40,12 +39,20 @@ namespace Reporting
             {
                 _pivot.Add(
                     group.Key,
-                    _pivot.Groups.Select(g => row[g]).ToArray(),
+                    _pivot.Groups.Select(g => GetGroup(row, g)).ToArray(),
                     report.Measures.Select(m => row[m.Name]).ToArray());
             }
 
             _empty = new string[report.Measures.Length];
             _pivotedHeadersCount = _pivot.GetHeaderCount();
+        }
+
+        private static Pivot.GroupValue GetGroup(IDictionary<string, string> row, string column)
+        {
+            var value = row[column];
+            if (!row.TryGetValue(column + "Order", out var sortValue))
+                sortValue = value;
+            return new Pivot.GroupValue(value, sortValue);
         }
 
         public string Build(bool measureHeader)
@@ -143,7 +150,7 @@ namespace Reporting
                 _groups = groups.ToArray();
             }
 
-            internal void Add(object rowKey, IReadOnlyCollection<string> groupValues, IReadOnlyCollection<string> values)
+            internal void Add(object rowKey, IReadOnlyCollection<GroupValue> groupValues, IReadOnlyCollection<string> values)
             {
                 if (groupValues.Count != _groups.Length)
                     throw new ArgumentException();
@@ -152,7 +159,7 @@ namespace Reporting
 
                 var node = _root;
                 foreach (var groupValue in groupValues)
-                    node = Ensure(node, groupValue, () => new Node(groupValue));
+                    node = Ensure(node, groupValue, () => new Node(groupValue.Value));
 
                 Ensure(_rows, rowKey).Add(node, values);
             }
@@ -207,6 +214,29 @@ namespace Reporting
                 }
             }
 
+            public class GroupValue : IComparable<GroupValue>
+            {
+                public GroupValue(string value, string sortValue)
+                {
+                    Value = value;
+                    _sortValue = sortValue;
+                }
+
+                public string Value { get; }
+                private readonly string _sortValue;
+
+                public int CompareTo(GroupValue other)
+                {
+                    if (ReferenceEquals(this, other)) return 0;
+                    if (ReferenceEquals(null, other)) return 1;
+
+                    if (int.TryParse(_sortValue, out var s1) && int.TryParse(other._sortValue, out var s2))
+                        return s1.CompareTo(s2);
+
+                    return string.Compare(_sortValue, other._sortValue, StringComparison.Ordinal);
+                }
+            }
+
             public struct Header
             {
                 public string Title { get; set; }
@@ -214,7 +244,7 @@ namespace Reporting
             }
 
             [DebuggerDisplay("{" + nameof(Value) + "} (Count = {" + nameof(Count) + "})")]
-            private class Node : Dictionary<string, Node>
+            private class Node : SortedList<GroupValue, Node>
             {
                 public Node(string value)
                 {
@@ -253,7 +283,7 @@ namespace Reporting
 
                 return x.All(p => Equals(p.Value, y[p.Key]));
             }
-
+            
             public int GetHashCode(IDictionary<string, string> dic)
             {
                 return dic.Values.Aggregate(0, (cur, value) => (cur * 397) ^ (value?.GetHashCode() ?? 0));

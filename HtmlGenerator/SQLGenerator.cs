@@ -20,11 +20,15 @@ namespace Reporting
             var selects = new List<string>();
             var where = new List<string>();
             var groupBys = new List<string>();
+            var orderBys = new List<string>();
+
+            var aliases = new Dictionary<Dimension, string>();
 
             foreach (var gr in GetReportColumns().GroupBy(da => da.Dimension))
             {
                 var dim = gr.Key;
                 var alias = dim.Table != null ? $"d{joins.Count}" : factTable;
+                aliases.Add(dim, alias);
 
                 if (dim.Table != null)
                     joins.Add($"left join {dim.Table} [{alias}] on [{alias}].[Id] = [{factTable}].[{dim.Name}Id]");
@@ -33,10 +37,19 @@ namespace Reporting
                 selects.AddRange(gr.Select(da => $"{da.Expression(alias)} [{da.Name}]"));
             }
 
+            foreach (var da in _report.OrderBys)
+            {
+                var sortExpr = $"{da.SortExpression(aliases[da.Dimension])}";
+                orderBys.Add(sortExpr);
+                groupBys.Add(sortExpr);
+                selects.Add($"{sortExpr} [{da.Name}Order]");
+
+            }
+
             selects.AddRange(_report.Measures.Select(m => $"{m.AggregationFunction}({m.Expression(factTable)}) [{m.Name}]"));
 
-            if (_report.Filters.Length > 0)
-                where.AddRange(_report.Filters.Select(f => $"[{f.Filter.Name}] {f.Operation} '{f.Value}'"));
+            if (_report.Filters.Count > 0)
+                where.AddRange(_report.Filters.Select(f => f.ToString()));
 
             var sql = $"select {string.Join(",\n\t", selects)}\n" +
                 $"from {_report.FactTable.Table} [{factTable}]\n" +
@@ -45,7 +58,11 @@ namespace Reporting
             if (where.Count > 0)
                 sql += $"where {string.Join(" and ", where)}\n";
 
-            sql += $"group by {string.Join(", ", groupBys)}";
+            sql += $"group by {string.Join(", ", groupBys)}\n";
+
+            if (orderBys.Count > 0)
+                sql += $"order by {string.Join(", ", orderBys)}";
+
             return sql;
         }
 
@@ -84,8 +101,6 @@ namespace Reporting
 
             sql = sql + cols + measures;
             sql = sql + "from " + report.FactTable.Table + " f \n";
-
-            //TODO: add where clause for filters here
 
             if (report.Measures != null)
                 sql = sql + "group by " + groupBy + "\n";

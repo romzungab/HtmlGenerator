@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
+using System.Collections.Generic;
 
 namespace Reporting
 {
@@ -9,7 +9,7 @@ namespace Reporting
         public ReportColumn[] Columns = new ReportColumn[0];
         public DimensionAttribute[] Rows = new DimensionAttribute[0];
         public Measure[] Measures;
-        public ReportFilter[] Filters = new ReportFilter[0];
+        public List<BaseFilter> Filters = new List<BaseFilter>();
         public DimensionAttribute[] OrderBys = new DimensionAttribute[0];
     }
 
@@ -43,12 +43,13 @@ namespace Reporting
 
         public DimensionAttribute(Func<string, string> expression)
         {
-            Expression = expression;
+            SortExpression = Expression = expression;
         }
 
-        public string Name;
+        public string Name { get; set; }
         public Func<string, string> Expression { get; }
-        public Dimension Dimension;
+        public Func<string, string> SortExpression { get; set; }
+        public Dimension Dimension { get; set; }
     }
 
     public class Measure
@@ -60,20 +61,51 @@ namespace Reporting
 
         public Measure(Func<string, string> expression)
         {
-            SortExpression = Expression = expression;
+            Expression = expression;
         }
 
         public string Name;
         public Func<string, string> Expression;
-        public Func<string, string> SortExpression;
         public string AggregationFunction;
         public FactTable Table;
     }
 
-    public class ReportFilter
+    public abstract class BaseFilter
     {
         public DimensionAttribute Filter;
+    }
+    
+    public class SimpleFilter : BaseFilter
+    {
         public string Value;
         public string Operation;
+
+        public override string ToString()
+        {
+            return $"{Filter.Name} {Operation} '{Value}'";
+        }
+    }
+
+    public class InFilter : BaseFilter
+    {
+        public bool Not;
+        public IEnumerable<string> InValues;
+
+        public override string ToString()
+        {
+            return Not ? $" {Filter.Name} NOT IN ({string.Join(", ", InValues )})" : $" {Filter.Name} IN ({string.Join(", ", InValues )})";
+        }
+    }
+
+    public class BetweenFilter : BaseFilter
+    {
+        public string Value1;
+        public string Value2;
+        public bool Not;
+
+        public override string ToString()
+        {
+            return Not ? $"NOT({Filter.Name} BETWEEN '{Value1}' and '{Value2}')" : $"{Filter.Name} BETWEEN '{Value1}' and '{Value2}'";
+        }
     }
 }

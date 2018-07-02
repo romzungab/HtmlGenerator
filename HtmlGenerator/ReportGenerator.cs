@@ -70,7 +70,7 @@ th {
                 Name = "Currency",
                 Table = null
             };
-            
+
             var dDate = new Dimension
             {
                 Name = "Date",
@@ -215,7 +215,13 @@ th {
                 $"\n\tend")
             {
                 Name = "Title",
-                Dimension = dClassification
+                Dimension = dClassification,
+                SortExpression = t => $"case {t}.Title " +
+                                 "\n\t\twhen \'Business\' then \'1\'" +
+                                 "\n\t\twhen \'Leave\' then \'2\'" +
+                                 "\n\t\twhen \'Break\' then \'4\'" +
+                                 "\n\t\telse \'3\'" +
+                                 "\n\tend "
             };
 
             //dActivity columns
@@ -260,6 +266,17 @@ th {
                 Dimension = dHost
             };
 
+            var cStartTime = new DimensionAttribute(t=>$"cast(min({t}.StartTime) as Time)") 
+            {
+                Name = "StartTime",
+                Dimension = dDate,
+            };
+
+            var cFinishTime = new DimensionAttribute(t=>$"cast(max({t}.FinishTime) as Time)")
+            {
+                Name = "FinishTime",
+                Dimension = dDate
+            };
 
             //dUser columns
             var cFullName = new DimensionAttribute("FullName")
@@ -303,7 +320,7 @@ th {
                 Dimension = dLeave
             };
 
-            var cLReferenceNumber = new DimensionAttribute(("ReferenceNumber"))
+            var cLReferenceNumber = new DimensionAttribute("ReferenceNumber")
             {
                 Name = "ReferenceNumber",
                 Dimension = dLeave
@@ -336,7 +353,9 @@ th {
             var cDay = new DimensionAttribute(t => $"DATENAME(weekday,{t}.[Date])")
             {
                 Name = "Day",
-                Dimension = dDate
+                Dimension = dDate,
+                SortExpression = t => $"((@@datefirst - 2 + datepart(dw, {t}.[Date])) % 7)",
+                
             };
 
             var cWeek = new DimensionAttribute(t => $"dateadd(dd, -((@@datefirst - 2 + datepart(dw, {t}.[Date])) % 7), cast({t}.[Date] as date))")
@@ -345,7 +364,7 @@ th {
                 Dimension = dDate
             };
 
-            var cMonth = new DimensionAttribute(t => $"dateadd(month, datediff(month, 0, {t}.[Date]), 0)")
+            var cMonth = new DimensionAttribute(t => $"datename(month,dateadd(month, datediff(month, 0, {t}.[Date]), 0))")
             {
                 Name = "Month",
                 Dimension = dDate
@@ -414,7 +433,7 @@ th {
             var mMileage = new Measure("Mileage")
             {
                 Name = "Mileage",
-               AggregationFunction = "sum"
+                AggregationFunction = "sum"
             };
 
             var mNonChargeableExpense = new Measure("NonChargeableExpense")
@@ -453,7 +472,7 @@ th {
                 Dimension = dChangedBy
             };
 
-            var cChangedDateTimeUTC = new DimensionAttribute("ChangedDateTimeUTC")
+            var cChangedDateTimeUtc = new DimensionAttribute("ChangedDateTimeUTC")
             {
                 Name = "ChangedDateTimeUTC",
                 Dimension = dDate
@@ -464,7 +483,7 @@ th {
                 Name = "TotalSubmitted",
                 AggregationFunction = "sum"
             };
-            
+
             var cColumnName = new DimensionAttribute("ColumnName")
             {
                 Name = "ColumnName",
@@ -475,7 +494,7 @@ th {
                 Name = "Value",
                 Dimension = dExpenseLog
             };
-            
+
             var cEReferenceNumber = new DimensionAttribute("ReferenceNumber")
             {
                 Name = "ReferenceNumber",
@@ -486,14 +505,14 @@ th {
             dActivity.Attributes = new[] { cATitle, cActivityType, cDescription, cObjectDescription, cUtcStartDateTime, cUtcFinishDateTime };
             dUser.Attributes = new[] { cUserName, cFullName, cDepartment, cRegionId };
             dClassification.Attributes = new[] { cIsArchived, cIsPersonal, cReferenceNumber, cCTitle, cFolder, cParent, cTaskPriority, cActualWork, cTotalWork, cTaskStatus, cDueDateTime, cCompletedDate, cTaskFinish, cTaskStart };
-            dDate.Attributes = new[] { cDate, cWeek, cMonth, cDay, cSubmittedDate, cCreatedDate, cChangedDateTimeUTC };
+            dDate.Attributes = new[] { cStartTime, cFinishTime, cDate, cWeek, cMonth, cDay, cSubmittedDate, cCreatedDate, cChangedDateTimeUtc };
             dParticipant.Attributes = new[] { cParticipantRoleId, cRate, cOtherRate };
             dHost.Attributes = new[] { cHostName };
             dLeave.Attributes = new[] { cStartDateTime, cFinishDateTime, cLeaveStatus, cManagerNote, cPayrollNote, cLeaveType, cLReferenceNumber };
             dExpenseStatus.Attributes = new[] { cExpenseStatus };
             dCurrency.Attributes = new[] { cCurrency };
             dSubmittedBy.Attributes = new[] { cSubmittedBy };
-            dChangedBy.Attributes = new[] { cChangedBy};
+            dChangedBy.Attributes = new[] { cChangedBy };
             dReferenceNumber.Attributes = new[] { cEReferenceNumber };
             dExpenseLog.Attributes = new[] { cColumnName, cValue };
 
@@ -518,7 +537,7 @@ th {
                 Dimensions = new[] { dActivity, dUser, dClassification, dDate, dHost },
             };
 
-            fExpense.Measures = new[] {mTotal, mMileage, mNonChargeableExpense, mChargeableExpense};
+            fExpense.Measures = new[] { mTotal, mMileage, mNonChargeableExpense, mChargeableExpense };
 
             var mLDuration = new Measure("Duration")
             {
@@ -536,23 +555,10 @@ th {
                 AggregationFunction = "sum",
             };
 
-            //var mStart = new Measure("StartTime")
-            //{
-            //    Name = "Start",
-            //    Table = fActivity,
-            //    AggregationFunction = "min"
-            //};
-
-            //var mFinish = new Measure("FinishTime")
-            //{
-            //    Name = "Finish",
-            //    Table = fActivity,
-            //    AggregationFunction = "max"
-            //};
-
-            fActivity.Measures = new[] { mActiveCount, mDuration};//, mStart, mFinish };
+            fActivity.Measures = new[] { mActiveCount, mDuration };//, mStart, mFinish };
 
             //reports
+           
             var timesheetReport = new Report
             {
                 FactTable = fActivity,
@@ -562,7 +568,14 @@ th {
                     {
                         Attribute = cDate,
                      },
-
+                    //new ReportColumn()
+                    //{
+                    //    Attribute = cStartTime,
+                    //},
+                    //new ReportColumn()
+                    //{
+                    //    Attribute = cFinishTime,
+                    //},
                     new ReportColumn()
                     {
                         Attribute = cActivityType,
@@ -579,29 +592,35 @@ th {
                    cDepartment,
                    cHostName,
                    cMonth,
-                   cWeek,
-                   cFullName
                 },
-                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
-                Filters = new[]
+                Measures = new[] {
+                  new Measure(t=>$"cast(min({t}.StartTime) as Time)")
+                    {
+                        Name = "StartTime",
+                    },
+                    new Measure(t=>$"cast(max({t}.FinishTime) as Time)")
+                    {
+                        Name = "FinishTime",
+                    },
+                    mDuration,
+                },
+                Filters = new List<BaseFilter>
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = cFullName,
                         Operation = "=",
                         Value = "Roms Ungab"
                     },
 
-                    new ReportFilter()
+                    new BetweenFilter()
                     {
-                        Filter = new DimensionAttribute("StartTime")
-                        {
-                             Name = "StartTime"
-                        },
-                        Operation = ">",
-                        Value = "20180101"
+                        Filter = cDate,
+                        Value1 = "20180601",
+                        Value2 = "20180620"
                     }
-                }
+                },
+                OrderBys = new[] {cDate, cCTitle}
             };
 
             var activityListReport = new Report
@@ -633,15 +652,15 @@ th {
                 },
                 Rows = new[] { cFullName },
                 Measures = new[] { mActiveCount, mDuration },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter
+                    new SimpleFilter
                     {
                         Filter = cDate,
                         Operation = "=",
                         Value = "20180620"
                     },
-                    new ReportFilter
+                    new SimpleFilter
                     {
                         Filter = cFullName,
                         Operation = "=",
@@ -682,9 +701,9 @@ th {
                         Table = fActivity,
                     },
                 },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = new DimensionAttribute("StartTime")
                         {
@@ -727,9 +746,9 @@ th {
                         Table = fActivity,
                     }
                 },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = new DimensionAttribute("StartTime")
                         {
@@ -768,9 +787,9 @@ th {
                     },
                 },
                 Measures = new[] { mDuration },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = new DimensionAttribute("StartTime")
                         {
@@ -808,9 +827,9 @@ th {
                  },
                 Rows = new[] { cATitle, cMonth, cWeek },
                 Measures = new[] { mDuration, mActiveCount },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = new DimensionAttribute("StartTime")
                         {
@@ -827,7 +846,7 @@ th {
                 FactTable = fActivity,
                 Columns = new[]
                 {
-                   new ReportColumn()
+                    new ReportColumn()
                     {
                         Attribute = cDay,
                         Pivot = true
@@ -838,28 +857,29 @@ th {
                     },
                 },
                 Rows = new[] { cFullName, cWeek },
-                Measures = new[] { mDuration },//, mStart, mFinish },
-                Filters = new[]
+                Measures = new[] { mDuration },
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter
+                    new BetweenFilter()
                     {
                         Filter = cDate,
-                        Operation = ">",
-                        Value = "20180618"
+                        Value1 = "20180101",
+                        Value2 = "20180625",
+
                     },
-                    new ReportFilter
-                    {
-                        Filter = cDate,
-                        Operation = "<",
-                        Value = "20180625"
-                    },
-                    new ReportFilter
+
+                    new InFilter()
                     {
                         Filter = cFullName,
-                        Operation = "=",
-                        Value = "Roms Ungab"
+                        InValues = new List<string>()
+                        {
+                            "'Roms Ungab'",
+                            "'Vic Test'",
+                        },
+                        Not = false,
                     },
-                }
+                },
+                OrderBys = new[] { cFullName, cDay }
             };
 
             var billableProject = new Report
@@ -930,9 +950,9 @@ th {
 
                 },
                 Measures = new[] { mDuration },
-                Filters = new[]
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = new DimensionAttribute("StartTime")
                         {
@@ -980,10 +1000,10 @@ th {
                         Attribute = cNotes,
                     },
                 },
-                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
-                Filters = new[]
+                Measures = new[] { mDuration },//mStart, mFinish, mDuration },
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = cType,
                         Operation = "=",
@@ -1030,10 +1050,10 @@ th {
                     },
                 },
 
-                Measures = new[] { mDuration},//mStart, mFinish, mDuration },
-                Filters = new[]
+                Measures = new[] { mDuration },//mStart, mFinish, mDuration },
+                Filters = new List<BaseFilter>()
                 {
-                    new ReportFilter()
+                    new SimpleFilter()
                     {
                         Filter = cType,
                         Operation = "=",
@@ -1097,21 +1117,21 @@ th {
                     new ReportColumn()
                     {
                         Attribute = cSubmittedDate,
-                    }, 
+                    },
                     new ReportColumn()
                     {
                         Attribute = cSubmittedBy
                     },
-                     
+
                     new ReportColumn()
                     {
                         Attribute = cFromDate
-                    }, 
+                    },
 
                     new ReportColumn()
                     {
                         Attribute = cToDate
-                    }, 
+                    },
 
                     new ReportColumn()
                     {
@@ -1124,14 +1144,14 @@ th {
                     }
 
                 },
-                Measures = new[] {mTotal}
+                Measures = new[] { mTotal }
             };
 
-          var expenseLog = new Report()
+            var expenseLog = new Report()
             {
                 FactTable = fExpense,
                 Columns = new[]
-                {
+                  {
                     new ReportColumn()
                     {
                         Attribute = cFullName,
@@ -1139,8 +1159,8 @@ th {
                     new ReportColumn()
                     {
                         Attribute = cEReferenceNumber,
-                    }, 
-                  
+                    },
+
                     new ReportColumn()
                     {
                         Attribute = cFromDate
@@ -1158,12 +1178,11 @@ th {
 
                     new ReportColumn()
                     {
-                        Attribute = cChangedDateTimeUTC,
+                        Attribute = cChangedDateTimeUtc,
                     },
                     new ReportColumn()
                     {
-                        Attribute = cChangedBy,
-                    }, 
+                    },
                   new ReportColumn()
                   {
                       Attribute = cColumnName
@@ -1176,25 +1195,9 @@ th {
                 Measures = new[] { mTotal }
             };
 
-            //CreateSQLFile(timesheetReport, "TimesheetReport");
-            //CreateSQLFile(activityListReport, "ActivityListReport");
-            //CreateSQLFile(topicAllocation, "TopicAllocationReport");
-            //CreateSQLFile(classificationAllocation, "ClassificationAllocationReport");
-            //CreateSQLFile(applicationSummary, "ApplicationSummary");
-            //CreateSQLFile(adHocBillable, "AdHocBillable"); //rate of participant ok
-            //CreateSQLFile(weeklyTimesheet, "WeeklyTimesheet"); //leave and public holidays ; pivot days
-            //CreateSQLFile(billableProject, "BillableProject");
-            //CreateSQLFile(allocatedWork, "AllocatedWork");
-            //CreateSQLFile(detailBillable, "DetailBillable");
-            //CreateSQLFile(taskList, "TaskList");
-            //CreateSQLFile(projectList, "ProjectList");
-            //CreateSQLFile(expense, "Expense Report");
-            //CreateSQLFile(expenseLog, "Expense Log Report");
-            //CreateSQLFile(leave, "Leave");
-            
             RunReport(timesheetReport);
         }
-
+         
         private static void RunReport(Report report)
         {
             var sql = CreateSQLFile(report, "Report");
@@ -1215,18 +1218,18 @@ th {
             return data;
         }
 
-        private static void CreateReportFile(Report report,  DataTable data)
+        private static void CreateReportFile(Report report, DataTable data)
         {
-            var html = new TableBuilder(report,data);
-         //   var name = Path.GetTempFileName();
-            var name = @"C:\Users\romelyn.ungab\Documents\sql\report.html" ;
+            var html = new TableBuilder(report, data);
+            //   var name = Path.GetTempFileName();
+            var name = @"C:\Users\romelyn.ungab\Documents\sql\report.html";
             File.Delete(name);
-           // name = Path.ChangeExtension(name, "html");
+            // name = Path.ChangeExtension(name, "html");
 
             File.WriteAllText(name, Prefix + html.Build(report.Measures.Length > 1 || !report.Columns.Any(c => c.Pivot)));
             Process.Start(name);
             Thread.Sleep(1000);
-         //   File.Delete(name);
+            //   File.Delete(name);
         }
 
         private static string CreateSQLFile(Report report, string reportName)
