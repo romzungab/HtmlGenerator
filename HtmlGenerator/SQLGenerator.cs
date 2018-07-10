@@ -47,7 +47,7 @@ namespace Reporting
             }
 
             selects.AddRange(_report.Measures.Select(m => $"{m.AggregationFunction}({m.Expression(factTable)}) [{m.Name}]"));
-
+           
             if (_report.Filters.Count > 0)
                 where.AddRange(_report.Filters.Select(f => f.ToString()));
 
@@ -71,46 +71,5 @@ namespace Reporting
             return _report.Columns.Select(x => x.Attribute).Concat(_report.Rows).ToArray();
         }
 
-        public static string SelectFromFactTable(Report report)
-        {
-            var dims = GetReportDimensions(report);
-            var sql = "select\n\t";
-            var cols = string.Empty;
-            var measures = string.Empty;
-
-            foreach (var d in dims)
-            {
-                if (string.IsNullOrEmpty(d.Table))
-                    cols += $"f.{d.Name}, ";
-                else
-                    cols += $"f.{d.Table}Id, ";
-            }
-            var groupBy = cols;
-
-            foreach (var m in report.Measures)
-            {
-                if (m == report.Measures.Last())
-                {
-                    measures += $"{m.AggregationFunction} ({m.Expression("f")}) as {m.Name}\n"; ;
-                }
-                else
-                {
-                    measures += $"{m.AggregationFunction} ({m.Expression("f")}) as {m.Name},";
-                }
-            }
-
-            sql = sql + cols + measures;
-            sql = sql + "from " + report.FactTable.Table + " f \n";
-
-            if (report.Measures != null)
-                sql = sql + "group by " + groupBy + "\n";
-
-            return sql;
-        }
-
-        private static IEnumerable<Dimension> GetReportDimensions(Report report)
-        {
-            return report.Columns.Select(c => c.Attribute).Concat(report.Rows).Select(da => da.Dimension).Distinct();
-        }
-    }
+      }
 }

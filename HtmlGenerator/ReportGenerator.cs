@@ -65,6 +65,12 @@ th {
                 Table = null
             };
 
+            var dExpense = new Dimension()
+            {
+                Name = "Expense",
+                Table = "dExpense"
+            };
+
             var dCurrency = new Dimension()
             {
                 Name = "Currency",
@@ -94,14 +100,14 @@ th {
                 Name = "Host",
                 Table = null
             };
-            var dReferenceNumber = new Dimension()
+            var dReferenceNumber= new Dimension()
             {
                 Name = "ReferenceNumber",
                 Table = null
             };
             var dExpenseLog = new Dimension()
             {
-                Name = "Log",
+                Name = "Expense",
                 Table = "dExpenseLog"
             };
 
@@ -266,13 +272,13 @@ th {
                 Dimension = dHost
             };
 
-            var cStartTime = new DimensionAttribute(t=>$"cast(min({t}.StartTime) as Time)") 
+            var cStartTime = new DimensionAttribute(t => $"cast(min({t}.StartTime) as Time)")
             {
                 Name = "StartTime",
                 Dimension = dDate,
             };
 
-            var cFinishTime = new DimensionAttribute(t=>$"cast(max({t}.FinishTime) as Time)")
+            var cFinishTime = new DimensionAttribute(t => $"cast(max({t}.FinishTime) as Time)")
             {
                 Name = "FinishTime",
                 Dimension = dDate
@@ -355,7 +361,7 @@ th {
                 Name = "Day",
                 Dimension = dDate,
                 SortExpression = t => $"((@@datefirst - 2 + datepart(dw, {t}.[Date])) % 7)",
-                
+
             };
 
             var cWeek = new DimensionAttribute(t => $"dateadd(dd, -((@@datefirst - 2 + datepart(dw, {t}.[Date])) % 7), cast({t}.[Date] as date))")
@@ -433,7 +439,7 @@ th {
             var mMileage = new Measure("Mileage")
             {
                 Name = "Mileage",
-                AggregationFunction = "sum"
+                AggregationFunction = ""
             };
 
             var mNonChargeableExpense = new Measure("NonChargeableExpense")
@@ -465,24 +471,29 @@ th {
                 Name = "SubmittedDate",
                 Dimension = dDate
             };
+            var cChangeType = new DimensionAttribute("Type")
+            {
+                Name = "Type",
+                Dimension = dExpenseLog
+            };
 
             var cChangedBy = new DimensionAttribute("FullName")
             {
                 Name = "ChangedBy",
-                Dimension = dChangedBy
+                Dimension = dExpenseLog
             };
 
-            var cChangedDateTimeUtc = new DimensionAttribute("ChangedDateTimeUTC")
+            var cChangedDateTimeUtc = new DimensionAttribute("ChangedDate")
             {
-                Name = "ChangedDateTimeUTC",
-                Dimension = dDate
+                Name = "ChangedDate",
+                Dimension = dExpenseLog
             };
 
-            var mTotal = new Measure(t => $"({t}.Mileage + {t}.NonChargeableExpense + {t}.ChargeableExpense)")
+            var mTotal = new Measure(t => $"{t}.Mileage + {t}.NonChargeableExpense + {t}.ChargeableExpense")
             {
                 Name = "TotalSubmitted",
-                AggregationFunction = "sum"
-            };
+                AggregationFunction = "sum",
+             };
 
             var cColumnName = new DimensionAttribute("ColumnName")
             {
@@ -498,7 +509,7 @@ th {
             var cEReferenceNumber = new DimensionAttribute("ReferenceNumber")
             {
                 Name = "ReferenceNumber",
-                Dimension = dReferenceNumber
+                Dimension = dReferenceNumber,
             };
 
             //add attributes to dimensions
@@ -510,17 +521,17 @@ th {
             dHost.Attributes = new[] { cHostName };
             dLeave.Attributes = new[] { cStartDateTime, cFinishDateTime, cLeaveStatus, cManagerNote, cPayrollNote, cLeaveType, cLReferenceNumber };
             dExpenseStatus.Attributes = new[] { cExpenseStatus };
-            dCurrency.Attributes = new[] { cCurrency };
+            dCurrency.Attributes = new[] { cCurrency};
             dSubmittedBy.Attributes = new[] { cSubmittedBy };
             dChangedBy.Attributes = new[] { cChangedBy };
-            dReferenceNumber.Attributes = new[] { cEReferenceNumber };
-            dExpenseLog.Attributes = new[] { cColumnName, cValue };
+            dExpenseLog.Attributes = new[] { cColumnName, cValue , cChangedDateTimeUtc, cChangedBy};
+            dReferenceNumber.Attributes = new[] { cEReferenceNumber};
 
             var fExpense = new FactTable
             {
                 Name = "fExpense",
                 Table = "fExpense",
-                Dimensions = new[] { dExpenseStatus, dUser, dCurrency, dSubmittedBy, dChangedBy, dExpenseLog, dReferenceNumber }
+                Dimensions = new[] { dExpenseStatus, dUser, dExpense, dSubmittedBy, dChangedBy, dExpenseLog }
             };
 
             var fLeave = new FactTable
@@ -558,7 +569,7 @@ th {
             fActivity.Measures = new[] { mActiveCount, mDuration };//, mStart, mFinish };
 
             //reports
-           
+
             var timesheetReport = new Report
             {
                 FactTable = fActivity,
@@ -620,7 +631,7 @@ th {
                         Value2 = "20180620"
                     }
                 },
-                OrderBys = new[] {cDate, cCTitle}
+                OrderBys = new[] { cDate, cCTitle }
             };
 
             var activityListReport = new Report
@@ -876,7 +887,7 @@ th {
                             "'Roms Ungab'",
                             "'Vic Test'",
                         },
-                        Not = false,
+                        IsNot = false,
                     },
                 },
                 OrderBys = new[] { cFullName, cDay }
@@ -1141,7 +1152,12 @@ th {
                     new ReportColumn()
                     {
                         Attribute = cCurrency,
-                    }
+                    },
+
+                    //new ReportColumn()
+                    //{
+                    //    Attribute = cTotal,
+                    //},
 
                 },
                 Measures = new[] { mTotal }
@@ -1175,13 +1191,14 @@ th {
                     {
                         Attribute = cExpenseStatus
                     },
+                      new ReportColumn()
+                      {
+                          Attribute = cChangeType
+                      },
 
                     new ReportColumn()
                     {
                         Attribute = cChangedDateTimeUtc,
-                    },
-                    new ReportColumn()
-                    {
                     },
                   new ReportColumn()
                   {
@@ -1190,14 +1207,19 @@ th {
                     new ReportColumn()
                     {
                         Attribute = cValue
-                    }
+                    },
+                      //new ReportColumn()
+                      //{
+                      //    Attribute = cTotal,
+                      //} ,
                 },
+                
                 Measures = new[] { mTotal }
             };
 
-            RunReport(timesheetReport);
+            RunReport(adHocBillable);
         }
-         
+
         private static void RunReport(Report report)
         {
             var sql = CreateSQLFile(report, "Report");
@@ -1207,11 +1229,11 @@ th {
         private static DataTable FetchData(string sql)
         {
             var data = new DataTable();
-            using (SqlConnection sqlConn = new SqlConnection("Data Source = AKLACHIEVESVR\\SQLEXPRESS; Initial Catalog = IPFXAchieveQA; Integrated Security = False; User ID = sa; Password = kp07p@55; Connect Timeout = 30; Encrypt = False; TrustServerCertificate = False; ApplicationIntent = ReadWrite; MultiSubnetFailover = False"))
+            using (var sqlConn = new SqlConnection("Data Source = AKLACHIEVESVR\\SQLEXPRESS; Initial Catalog = IPFXAchieveQA; Integrated Security = False; User ID = sa; Password = kp07p@55; Connect Timeout = 30; Encrypt = False; TrustServerCertificate = False; ApplicationIntent = ReadWrite; MultiSubnetFailover = False"))
             {
-                using (SqlCommand cmd = new SqlCommand(sql, sqlConn))
+                using (var cmd = new SqlCommand(sql, sqlConn))
                 {
-                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    var da = new SqlDataAdapter(cmd);
                     da.Fill(data);
                 }
             }

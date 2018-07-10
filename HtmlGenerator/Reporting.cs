@@ -86,14 +86,14 @@ namespace Reporting
         }
     }
 
-    public class InFilter : BaseFilter
+   public class InFilter : BaseFilter
     {
-        public bool Not;
+        public bool IsNot;
         public IEnumerable<string> InValues;
 
         public override string ToString()
         {
-            return Not ? $" {Filter.Name} NOT IN ({string.Join(", ", InValues )})" : $" {Filter.Name} IN ({string.Join(", ", InValues )})";
+            return IsNot ? $" {Filter.Name} NOT IN ({string.Join(", ", InValues )})" : $" {Filter.Name} IN ({string.Join(", ", InValues )})";
         }
     }
 
@@ -101,11 +101,11 @@ namespace Reporting
     {
         public string Value1;
         public string Value2;
-        public bool Not;
+        public bool IsNot;
 
         public override string ToString()
         {
-            return Not ? $"NOT({Filter.Name} BETWEEN '{Value1}' and '{Value2}')" : $"{Filter.Name} BETWEEN '{Value1}' and '{Value2}'";
+            return IsNot ? $"NOT({Filter.Name} BETWEEN '{Value1}' and '{Value2}')" : $"{Filter.Name} BETWEEN '{Value1}' and '{Value2}'";
         }
     }
 }
