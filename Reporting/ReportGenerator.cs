@@ -53,12 +53,6 @@ th {
                 Table = "dParticipant"
             };
 
-            var dLeave = new Dimension
-            {
-                Name = "Leave",
-                Table = "dLeave"
-            };
-
             var dExpenseStatus = new Dimension()
             {
                 Name = "Status",
@@ -100,7 +94,13 @@ th {
                 Name = "Host",
                 Table = null
             };
-            var dReferenceNumber= new Dimension()
+            var dProcessedAmount = new Dimension
+            {
+                Name = "ProcessedAmount",
+                Table = null
+            };
+
+            var dReferenceNumber = new Dimension()
             {
                 Name = "ReferenceNumber",
                 Table = null
@@ -188,12 +188,6 @@ th {
             var cIsPersonal = new DimensionAttribute("IsPersonal")
             {
                 Name = "IsPersonal",
-                Dimension = dClassification
-            };
-
-            var cIsPrivate = new DimensionAttribute("IsPrivate")
-            {
-                Name = "IsPrivate",
                 Dimension = dClassification
             };
 
@@ -307,49 +301,7 @@ th {
                 Name = "Department",
                 Dimension = dUser
             };
-
-            var cLeaveStatus = new DimensionAttribute("Status")
-            {
-                Name = "LeaveStatus",
-                Dimension = dLeave
-            };
-
-            var cManagerNote = new DimensionAttribute("ManagerNote")
-            {
-                Name = "ManagerNote",
-                Dimension = dLeave
-            };
-
-            var cPayrollNote = new DimensionAttribute("PayrollNote")
-            {
-                Name = "PayrollNote",
-                Dimension = dLeave
-            };
-
-            var cLReferenceNumber = new DimensionAttribute("ReferenceNumber")
-            {
-                Name = "ReferenceNumber",
-                Dimension = dLeave
-            };
-
-            var cLeaveType = new DimensionAttribute("LeaveType")
-            {
-                Name = "LeaveType",
-                Dimension = dLeave
-            };
-
-            var cStartDateTime = new DimensionAttribute("StartDateTime")
-            {
-                Name = "First Day of Leave",
-                Dimension = dLeave,
-            };
-
-            var cFinishDateTime = new DimensionAttribute("FinishDateTime")
-            {
-                Name = "Last Day of Leave",
-                Dimension = dLeave,
-            };
-
+            
             var cDate = new DimensionAttribute(t => $"cast({t}.[Date] as Date)")
             {
                 Name = "Date",
@@ -454,10 +406,10 @@ th {
                 AggregationFunction = ""
             };
 
-            var mProcessedAmount = new Measure("ProcessedAmount")
+            var cProcessedAmount = new DimensionAttribute("ProcessedAmount")
             {
                 Name = "ProcessedAmount",
-                AggregationFunction = ""
+                Dimension = dProcessedAmount
             };
 
             var cSubmittedBy = new DimensionAttribute("FullName")
@@ -489,6 +441,16 @@ th {
                 Dimension = dExpenseLog
             };
 
+            var mStartTime = new Measure(t => $"cast(min({t}.StartTime) as Time)")
+            {
+                Name = "StartTime",
+            };
+
+            var mFinishTime = new Measure(t => $"cast(max({t}.FinishTime) as Time)")
+            {
+                Name = "FinishTime",
+            };
+
             var mTotal = new Measure(t => $"{t}.Mileage + {t}.NonChargeableExpense + {t}.ChargeableExpense")
             {
                 Name = "TotalSubmitted",
@@ -517,48 +479,34 @@ th {
             dUser.Attributes = new[] { cUserName, cFullName, cDepartment, cRegionId };
             dClassification.Attributes = new[] { cIsArchived, cIsPersonal, cReferenceNumber, cCTitle, cFolder, cParent, cTaskPriority, cActualWork, cTotalWork, cTaskStatus, cDueDateTime, cCompletedDate, cTaskFinish, cTaskStart };
             dDate.Attributes = new[] { cStartTime, cFinishTime, cDate, cWeek, cMonth, cDay, cSubmittedDate, cCreatedDate, cChangedDateTimeUtc };
-            dParticipant.Attributes = new[] { cParticipantRoleId, cRate, cOtherRate };
+            dParticipant.Attributes = new[] { cParticipantRoleId, cRole, cRate, cOtherRate };
             dHost.Attributes = new[] { cHostName };
-            dLeave.Attributes = new[] { cStartDateTime, cFinishDateTime, cLeaveStatus, cManagerNote, cPayrollNote, cLeaveType, cLReferenceNumber };
+         
             dExpenseStatus.Attributes = new[] { cExpenseStatus };
             dCurrency.Attributes = new[] { cCurrency};
             dSubmittedBy.Attributes = new[] { cSubmittedBy };
             dChangedBy.Attributes = new[] { cChangedBy };
             dExpenseLog.Attributes = new[] { cColumnName, cValue , cChangedDateTimeUtc, cChangedBy};
             dReferenceNumber.Attributes = new[] { cEReferenceNumber};
+            dProcessedAmount.Attributes = new[] { cProcessedAmount };
 
             var fExpense = new FactTable
             {
                 Name = "fExpense",
                 Table = "fExpense",
-                Dimensions = new[] { dExpenseStatus, dUser, dExpense, dSubmittedBy, dChangedBy, dExpenseLog }
+                Dimensions = new[] { dExpenseStatus, dUser, dExpense, dSubmittedBy, dChangedBy, dExpenseLog, dProcessedAmount }
             };
 
-            var fLeave = new FactTable
-            {
-                Name = "Leave",
-                Table = "fLeave",
-                Dimensions = new[] { dLeave, dUser },
-            };
-
-            var fActivity = new FactTable
+          var fActivity = new FactTable
             {
                 Name = "Activity",
                 Table = "fActivity",
-                Dimensions = new[] { dActivity, dUser, dClassification, dDate, dHost },
+                Dimensions = new[] { dActivity, dUser, dClassification, dParticipant, dDate, dHost },
             };
 
             fExpense.Measures = new[] { mTotal, mMileage, mNonChargeableExpense, mChargeableExpense };
 
-            var mLDuration = new Measure("Duration")
-            {
-                Name = "Duration",
-                AggregationFunction = "sum",
-                Table = fLeave,
-
-            };
-
-            fLeave.Measures = new[] { mLDuration };
+           
             var mDuration = new Measure("Duration")
             {
                 Name = "Duration",
@@ -566,7 +514,7 @@ th {
                 AggregationFunction = "sum",
             };
 
-            fActivity.Measures = new[] { mActiveCount, mDuration };//, mStart, mFinish };
+            fActivity.Measures = new[] { mActiveCount, mDuration }; //, mStart, mFinish };
 
             //reports
 
@@ -579,14 +527,7 @@ th {
                     {
                         Attribute = cDate,
                      },
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cStartTime,
-                    //},
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cFinishTime,
-                    //},
+                 
                     new ReportColumn()
                     {
                         Attribute = cActivityType,
@@ -602,17 +543,19 @@ th {
                 {
                    cDepartment,
                    cHostName,
-                   cMonth,
+                   cWeek,
                 },
                 Measures = new[] {
-                  new Measure(t=>$"cast(min({t}.StartTime) as Time)")
-                    {
-                        Name = "StartTime",
-                    },
-                    new Measure(t=>$"cast(max({t}.FinishTime) as Time)")
-                    {
-                        Name = "FinishTime",
-                    },
+                  //new Measure(t=>$"cast(min({t}.StartTime) as Time)")
+                  //  {
+                  //      Name = "StartTime",
+                  //  },
+                  //  new Measure(t=>$"cast(max({t}.FinishTime) as Time)")
+                  //  {
+                  //      Name = "FinishTime",
+                  //  },
+                    mStartTime,
+                    mFinishTime,
                     mDuration,
                 },
                 Filters = new List<BaseFilter>
@@ -627,8 +570,8 @@ th {
                     new BetweenFilter()
                     {
                         Filter = cDate,
-                        Value1 = "20180601",
-                        Value2 = "20180620"
+                        Value1 = "20180108",
+                        Value2 = "20180114"
                     }
                 },
                 OrderBys = new[] { cDate, cCTitle }
@@ -669,7 +612,7 @@ th {
                     {
                         Filter = cDate,
                         Operation = "=",
-                        Value = "20180620"
+                        Value = "20180717"
                     },
                     new SimpleFilter
                     {
@@ -866,7 +809,7 @@ th {
                     {
                         Attribute = cCTitle,
                     },
-                },
+                  },
                 Rows = new[] { cFullName, cWeek },
                 Measures = new[] { mDuration },
                 Filters = new List<BaseFilter>()
@@ -874,9 +817,8 @@ th {
                     new BetweenFilter()
                     {
                         Filter = cDate,
-                        Value1 = "20180101",
-                        Value2 = "20180625",
-
+                        Value1 = "20180115",
+                        Value2 = "20180121",
                     },
 
                     new InFilter()
@@ -885,7 +827,6 @@ th {
                         InValues = new List<string>()
                         {
                             "'Roms Ungab'",
-                            "'Vic Test'",
                         },
                         IsNot = false,
                     },
@@ -1024,7 +965,6 @@ th {
 
             };
 
-
             var projectList = new Report()
             {
                 FactTable = fActivity,
@@ -1073,49 +1013,7 @@ th {
                 }
 
             };
-            var leave = new Report()
-            {
-                FactTable = fLeave,
-                Columns = new[]
-                {
-                    new ReportColumn()
-                    {
-                        Attribute = cStartDateTime
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute =  cFinishDateTime
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cFullName,
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cLeaveType,
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cLeaveStatus,
-                    },
-
-                    new ReportColumn()
-                    {
-                        Attribute = cDepartment
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cManagerNote
-                    },
-                    new ReportColumn()
-                    {
-                        Attribute = cPayrollNote
-                    },
-               },
-                Measures = new[] { mLDuration },
-
-            };
-
+            
             var expense = new Report()
             {
                 FactTable = fExpense,
@@ -1133,7 +1031,6 @@ th {
                     {
                         Attribute = cSubmittedBy
                     },
-
                     new ReportColumn()
                     {
                         Attribute = cFromDate
@@ -1153,12 +1050,10 @@ th {
                     {
                         Attribute = cCurrency,
                     },
-
-                    //new ReportColumn()
-                    //{
-                    //    Attribute = cTotal,
-                    //},
-
+                    new ReportColumn()
+                    {
+                        Attribute = cProcessedAmount,
+                    },
                 },
                 Measures = new[] { mTotal }
             };
@@ -1217,7 +1112,7 @@ th {
                 Measures = new[] { mTotal }
             };
 
-            RunReport(adHocBillable);
+            RunReport(activityListReport);
         }
 
         private static void RunReport(Report report)
