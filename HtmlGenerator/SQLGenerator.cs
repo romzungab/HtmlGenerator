@@ -1,117 +1,75 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-
-namespace HtmlGenerator
+namespace Reporting
 {
-    public static class SQLGenerator
+    public class SQLGenerator
     {
-        public static string BuildSQL(Report report)
-        {
-            //with the assumption that there is already a fact table
+        private readonly Report _report;
 
-            var sql = SelectFromFactTable(report);
-            return JoinFactTableWithDimensions(sql, report) + "\norder by 1, 2";
+        public SQLGenerator(Report report)
+        {
+            _report = report;
         }
 
-        public static string BuildFactTableActivity(Report report)
+        public string BuildSQL()
         {
-            var allDim = AllDimensions(report);
+            const string factTable = "f";
 
-            var sql = "select\n\t";
-            for (var i = 0; i < allDim.Count; i++)
+            var joins = new List<string>();
+            var selects = new List<string>();
+            var where = new List<string>();
+            var groupBys = new List<string>();
+            var orderBys = new List<string>();
+
+            var aliases = new Dictionary<Dimension, string>();
+
+            foreach (var gr in GetReportColumns().GroupBy(da => da.Dimension))
             {
-                if (i == allDim.Count - 1)
-                    sql = sql + allDim[i].Table + "." + allDim[i].PrimaryKey + " as " + allDim[i].PrimaryKey + "\n";
-                else
-                    sql = sql + allDim[i].Table + "." + allDim[i].PrimaryKey + " as " + allDim[i].PrimaryKey + ",\n\t";
-            }
-            sql = sql + "from " + report.BaseTable + "\n";
+                var dim = gr.Key;
+                var alias = dim.Table != null ? $"d{joins.Count}" : factTable;
+                aliases.Add(dim, alias);
 
-            return allDim.Aggregate(sql, (current, r) => current + " inner join " + r.Table + " on " + r.Table + "." + r.PrimaryKey + " = " + report.BaseTable + "." + r.PrimaryKey + "\n");
-        }
+                if (dim.Table != null)
+                    joins.Add($"left join {dim.Table} [{alias}] on [{alias}].[Id] = [{factTable}].[{dim.Name}Id]");
 
-        private static List<Dimension> AllDimensions(Report report)
-        {
-            var allDim = new List<Dimension>();
-            foreach (var c in report.Columns)
-            {
-                if (allDim.Where(d => d.Table == c.Dimension.Table).Contains(c.Dimension))
-                    continue;
-                allDim.Add(c.Dimension);
+                groupBys.AddRange(gr.Select(da => $"{da.Expression(alias)}"));
+                selects.AddRange(gr.Select(da => $"{da.Expression(alias)} [{da.Name}]"));
             }
 
-            foreach (var r in report.Rows)
+            foreach (var da in _report.OrderBys)
             {
-                if (allDim.Where(d => d.Table == r.Dimension.Table).Contains(r.Dimension))
-                    continue;
-                allDim.Add(r.Dimension);
-            }
-            return allDim;
-        }
+                var sortExpr = $"{da.SortExpression(aliases[da.Dimension])}";
+                orderBys.Add(sortExpr);
+                groupBys.Add(sortExpr);
+                selects.Add($"{sortExpr} [{da.Name}Order]");
 
-        private static List<Dimension> GetAllUniqueDimensions(IEnumerable<Dimension> allDim)
-        {
-            var uniqueDim = new List<Dimension>();
-            foreach (var dim in allDim)
-            {
-                if (!(uniqueDim.Any(d => d.Table == dim.Table)))
-                    uniqueDim.Add(dim);
             }
-            return uniqueDim;
-        }
 
-        public static string GroupFactTable(string factSql, Report report)
-        {
-            var allDim = AllDimensions(report);
-            var sql = "select\n\t";
-            for (var i = 0; i < allDim.Count; i++)
-            {
-                if (i == allDim.Count - 1)
-                    sql = sql + report.BaseTable + allDim[i].PrimaryKey + "\n";
-                else
-                    sql = sql + report.BaseTable + allDim[i].PrimaryKey + ",\n\t";
-            }
-            sql = sql + "from(\n" + factSql + ") as factTable\n";
-            sql = sql + "group by ";
-            for (var i = 0; i < allDim.Count; i++)
-            {
-                if (i == allDim.Count - 1)
-                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + "\n";
-                else
-                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + ", ";
-            }
+            selects.AddRange(_report.Measures.Select(m => $"{m.AggregationFunction}({m.Expression(factTable)}) [{m.Name}]"));
+           
+            if (_report.Filters.Count > 0)
+                where.AddRange(_report.Filters.Select(f => f.ToString()));
+
+            var sql = $"select {string.Join(",\n\t", selects)}\n" +
+                $"from {_report.FactTable.Table} [{factTable}]\n" +
+                $"{string.Join("\n", joins)}\n";
+
+            if (where.Count > 0)
+                sql += $"where {string.Join(" and ", where)}\n";
+
+            sql += $"group by {string.Join(", ", groupBys)}\n";
+
+            if (orderBys.Count > 0)
+                sql += $"order by {string.Join(", ", orderBys)}";
 
             return sql;
         }
 
-        public static string SelectFromFactTable(Report report)
+        public DimensionAttribute[] GetReportColumns()
         {
-            var allDim = GetAllUniqueDimensions(AllDimensions(report));
-            var sql = allDim.Aggregate("select\n\t", (current, d) => current + report.BaseTable+"." + d.PrimaryKey + ",\n\t");
-            sql = sql + "count(1) Measure\n";
-            sql = sql + "from "+ report.BaseTable +"\n";
-            sql = sql + "group by ";
-            for (var i = 0; i < allDim.Count; i++)
-            {
-                if (i == allDim.Count - 1)
-                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + "\n";
-                else
-                    sql = sql + report.BaseTable + "." + allDim[i].PrimaryKey + ", ";
-            }
-
-            return sql;
+            return _report.Columns.Select(x => x.Attribute).Concat(_report.Rows).ToArray();
         }
 
-        public static string JoinFactTableWithDimensions(string factSql, Report report)
-        {
-            var allDim = GetAllUniqueDimensions(AllDimensions(report));
-            var sql = allDim.Aggregate("select \n\t", (current, d) => current + d.ColName + ", ");
-            sql = sql + "Measure";
-            sql = sql + "\nfrom (\n" + factSql + ") as groupedFactable\n";
-
-            return allDim.Aggregate(sql, (current, dim) => current + "\nleft join " + dim.Table + " on " + dim.Table + "." + dim.PrimaryKey + " = " + "groupedFactable." + dim.PrimaryKey);
-        }
-
-    }
+      }
 }

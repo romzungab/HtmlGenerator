@@ -1,12 +1,16 @@
-﻿using System.Diagnostics;
+﻿
+using System;
 
 namespace HtmlGenerator
 {
     public class Report
     {
-        public string BaseTable { get; set; }
-        public Grouping[] Columns { get; set; }
+        public FactTable FactTable { get; set; }
         public Grouping[] Rows { get; set; }
+        public Grouping[] Columns { get; set; }
+        public Measure[] Measures { get; set; }
+        public ReportDataRow[] Data { get; set; }
+        public ReportFilter[] Filters { get; set; }
 
         public ReportDataRow[] Data { get; set; }
 
@@ -16,18 +20,22 @@ namespace HtmlGenerator
         }
     }
 
+    public class Grouping
+    {
+        public ViewSource Source { get; set; }
+        public Column Column { get; set; }
+        public bool Group { get; set; }
+    }
+
     public class ReportDataRow
     {
-        public DimensionValue[] Dimensions { get; set; }
-        public object[] Measures { get; set; }
+        public ColumnValue[] ColumnValues { get; set; }
+        public MeasureValue[] MeasureValues { get; set; }
     }
 
-    [DebuggerDisplay("{Dimension} = {Value}")]
-    public class DimensionValue
+    public class ReportFilter
     {
-        public Dimension Dimension { get; set; }
-        public object Value { get; set; }
+       public string Expression { get; set; }
     }
-
 }
 

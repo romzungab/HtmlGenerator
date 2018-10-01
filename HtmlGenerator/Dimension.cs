@@ -1,21 +1,30 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Data.SqlClient;
+using System.Dynamic;
 
 namespace HtmlGenerator
 {
-    [DebuggerDisplay("{Table}")]
-    public class Dimension
+    public class ViewSource
     {
         public string Table { get; set; }
         public string PrimaryKey { get; set; }
-        public string ColName { get; set; }
-        public string[] Values { get; set; }
+        public Column[] Columns { get; set; }
+    }
+    public class Column
+    {
+        public string Name { get; set; }
+        public string Expression { get; set; }
+        public string[] GroupBys { get; set; }
     }
 
-    public class Grouping
+    public class Dimension : ViewSource
     {
-        public Dimension Dimension { get; set; }
-        public bool Group { get; set; }
+        
+    }
+    
+    public class ColumnValue
+    {
+        public Column Column { get; set; }
+        public object Value { get; set; }
     }
 }
 

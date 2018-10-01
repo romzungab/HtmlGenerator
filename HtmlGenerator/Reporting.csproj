@@ -7,8 +7,8 @@
     <ProjectGuid>{FACE6736-7BD7-4138-B5A5-A8483AE812E0}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HtmlGenerator</RootNamespace>
-    <AssemblyName>HtmlGenerator</AssemblyName>
+    <RootNamespace>Reporting</RootNamespace>
+    <AssemblyName>Reporting</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,10 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FactTable.cs" />
-    <Compile Include="Dimension.cs" />
+    <Compile Include="Reporting.cs" />
     <Compile Include="SQLGenerator.cs" />
-    <Compile Include="Report.cs" />
     <Compile Include="ReportGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableBuilder.cs" />
