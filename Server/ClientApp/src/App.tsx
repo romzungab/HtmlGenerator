@@ -1,9 +1,21 @@
 import * as React from 'react';
+import { getFactTables } from './api';
 import './App.css';
-
 import logo from './logo.svg';
 
-class App extends React.Component {
+interface State {
+  factTables: string[];
+}
+
+class App extends React.Component<{}, State> {
+  public readonly state: State = { factTables: [] };
+
+  public async componentDidMount() {
+    this.setState({
+      factTables: await getFactTables(),
+    })
+  }
+
   public render() {
     return (
       <div className="App">
@@ -14,6 +26,8 @@ class App extends React.Component {
         <p className="App-intro">
           To get started, edit <code>src/App.tsx</code> and save to reload.
         </p>
+          Fact Tables:
+          {this.state.factTables.map((f, i) => <p key={i}>{f}</p>)}
       </div>
     );
   }
