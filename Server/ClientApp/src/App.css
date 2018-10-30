@@ -20,8 +20,41 @@
 
 .App-intro {
   font-size: large;
+  left : 160;
 }
 
+
+.App-sidenav {
+    height: 100%;
+    width: 400px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    background-color: #dcdcdc;
+    top: 120; /* Stay at the top */
+    left: 0;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 20px;
+    text-align: left;
+}
+
+.dropdownRow{
+  display: inline-flex;
+  /* flex-shrink: .9; */
+  /* flex-wrap : nowrap; */
+}
+
+.labelPivot{
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 10px;
+}
+
+#main {
+    height: 100%; 
+    transition: margin-left .5s;
+    padding: 20px;
+    background-color:#fff
+}
+ 
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

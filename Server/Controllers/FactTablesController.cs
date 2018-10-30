@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Server.Controllers
 {
@@ -14,7 +15,15 @@ namespace Server.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(new[] { "Activities", "Leave" });
+            return Ok(FacttableDimensionAttributes.GetFactTables().Select(ft => new
+            {
+                ft.Name,
+                Dimensions = ft.Dimensions?.Select(d => new
+                {
+                    d.Name,
+                    Attributes = d.Attributes?.Select(da => da.Name),
+                })
+            }));
         }
     }
 }

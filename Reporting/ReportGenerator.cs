@@ -481,7 +481,7 @@ th {
             dDate.Attributes = new[] { cStartTime, cFinishTime, cDate, cWeek, cMonth, cDay, cSubmittedDate, cCreatedDate, cChangedDateTimeUtc };
             dParticipant.Attributes = new[] { cParticipantRoleId, cRole, cRate, cOtherRate };
             dHost.Attributes = new[] { cHostName };
-         
+
             dExpenseStatus.Attributes = new[] { cExpenseStatus };
             dCurrency.Attributes = new[] { cCurrency};
             dSubmittedBy.Attributes = new[] { cSubmittedBy };
@@ -505,8 +505,7 @@ th {
             };
 
             fExpense.Measures = new[] { mTotal, mMileage, mNonChargeableExpense, mChargeableExpense };
-
-           
+          
             var mDuration = new Measure("Duration")
             {
                 Name = "Duration",
@@ -515,6 +514,17 @@ th {
             };
 
             fActivity.Measures = new[] { mActiveCount, mDuration }; //, mStart, mFinish };
+
+            var json = new[] { fActivity, fExpense }.Select(ft => new
+            {
+                ft.Name,
+                Dimensions = ft.Dimensions.Select(d => new
+                {
+                    d.Name,
+                    Attributes = d.Attributes.Select(da => da.Name),
+                })
+            });
+
 
             //reports
 
